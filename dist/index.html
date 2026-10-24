@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0d1118" />
+    <meta name="description" content="Pixel Forge, a local editor for turning images into pixel art." />
+    <title>Pixel Forge — Local Pixel Art Studio</title>
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./styles.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "./vendor/three/build/three.module.js"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="./" aria-label="Pixel Forge home" data-i18n-aria-label="brandHome">
+          <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
+          <span class="brand-copy">
+            <strong>Pixel Forge</strong>
+            <span data-i18n="localStudio">Local pixel art studio</span>
+          </span>
+        </a>
+        <div class="topbar-actions">
+          <span class="privacy-chip"><i></i> <span data-i18n="localOnly">local only</span></span>
+          <div class="language-picker" id="language-picker">
+            <button class="language-button" id="language-button" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Change language">
+              <span id="language-flag" aria-hidden="true">🇬🇧</span>
+              <span class="language-caret" aria-hidden="true">⌄</span>
+            </button>
+            <div class="language-menu" id="language-menu" role="menu" hidden></div>
+          </div>
+          <button class="button button-ghost button-small" id="import-button" type="button" data-i18n="importImage">Import image</button>
+          <input id="file-input" type="file" accept="image/*,.glb,.gltf,.obj,.fbx,.mtl" multiple hidden />
+          <button class="button button-primary button-small" id="export-button" type="button" disabled data-i18n="exportPng">Export PNG</button>
+        </div>
+      </header>
+
+      <main>
+        <section class="hero" aria-labelledby="page-title">
+          <div>
+          <p class="eyebrow"><span>◆</span> <span data-i18n="eyebrow">Image → indexed pixel art</span></p>
+            <h1 id="page-title"><span data-i18n="heroTitleLine1">Forge your image</span><br /><em data-i18n="heroTitleLine2">one pixel at a time.</em></h1>
+            <p class="hero-copy" data-i18n="heroCopy">Place an image, frame it in the grid, and let the pipeline find its pixelated version.</p>
+          </div>
+          <div class="hero-note">
+            <span class="hero-note-icon">⌘</span>
+            <span><span data-i18n="browserOnly">Everything happens in your browser.</span><br /><strong data-i18n="nothingUploaded">Nothing is uploaded.</strong></span>
+          </div>
+        </section>
+
+        <section class="toolbar panel-frame" aria-label="Document settings" data-i18n-aria-label="documentSettings">
+          <div class="mode-toggle" role="group" aria-label="Editor mode" data-i18n-aria-label="editorMode">
+            <button class="mode-button is-active" id="mode-2d" type="button" data-mode="2d" aria-pressed="true">2D</button>
+            <button class="mode-button" id="mode-3d" type="button" data-mode="3d" aria-pressed="false">3D</button>
+          </div>
+          <div class="toolbar-block">
+            <span class="toolbar-label" data-i18n="canvas">Canvas</span>
+            <div class="resolution-control">
+              <label for="resolution-input" data-i18n="resolution">Resolution</label>
+              <input id="resolution-input" type="number" min="16" max="512" step="1" value="128" inputmode="numeric" />
+              <span>×</span>
+              <output id="resolution-output">128</output>
+            </div>
+          </div>
+          <div class="preset-group" aria-label="Resolution presets" data-i18n-aria-label="resolutionPresets">
+            <button class="preset-button" type="button" data-resolution="32">32</button>
+            <button class="preset-button" type="button" data-resolution="64">64</button>
+            <button class="preset-button is-active" type="button" data-resolution="128">128</button>
+            <button class="preset-button" type="button" data-resolution="256">256</button>
+            <button class="preset-button" type="button" data-resolution="512">512</button>
+          </div>
+          <div class="toolbar-status" id="document-status"><span class="status-dot"></span><span data-i18n="readyToImport">Ready to import</span></div>
+        </section>
+
+        <section class="workspace" aria-label="Pixel art editor" data-i18n-aria-label="pixelEditor">
+          <article class="canvas-panel panel-frame" id="source-panel">
+            <header class="panel-header">
+              <div>
+                <p class="section-kicker" data-i18n="sourceKicker">01 / source canvas</p>
+                <h2 data-i18n="sourceImage">Source image</h2>
+              </div>
+              <span class="panel-badge" id="source-dimensions">128 × 128</span>
+            </header>
+            <div class="canvas-toolbar">
+              <div class="canvas-tool-group" aria-label="Source canvas zoom" data-i18n-aria-label="sourceZoom">
+                <span class="micro-label" data-i18n="view">View</span>
+                <button class="icon-button" id="source-zoom-out" type="button" aria-label="Zoom out" data-i18n-aria-label="zoomOut">−</button>
+                <output id="source-zoom-value">100%</output>
+                <button class="icon-button" id="source-zoom-in" type="button" aria-label="Zoom in" data-i18n-aria-label="zoomIn">+</button>
+              </div>
+              <button class="text-button" id="source-fit" type="button" data-i18n="fit">Fit</button>
+              <button class="text-button" id="source-center" type="button" data-i18n="center">Center</button>
+            </div>
+            <div class="canvas-surface" id="source-surface" data-empty="true">
+              <canvas id="source-canvas" aria-label="Source image canvas" data-i18n-aria-label="sourceCanvas"></canvas>
+              <div class="three-stage" id="source-3d-stage" hidden>
+                <canvas id="source-3d-canvas" aria-label="3D model canvas" data-i18n-aria-label="modelCanvas"></canvas>
+                <div class="three-loading" id="three-loading" hidden><span class="loading-spinner" aria-hidden="true"></span><span data-i18n="loadingModel">Loading model…</span></div>
+              </div>
+              <div class="drop-hint" id="drop-hint">
+                <div class="drop-icon" aria-hidden="true">＋</div>
+                <strong data-i18n="dropImageHere">Drop an image here</strong>
+                <span data-i18n="orPaste">or paste it from the clipboard</span>
+                <div class="empty-actions">
+                  <button class="button button-ghost button-small" id="empty-import-button" type="button" data-i18n="chooseFile">Choose file</button>
+                  <button class="button button-ghost button-small" id="sample-button" type="button" data-i18n="loadExample">Load example</button>
+                </div>
+              </div>
+              <div class="drop-hint three-drop-hint" id="drop-hint-3d" hidden>
+                <div class="drop-icon" aria-hidden="true">◇</div>
+                <strong data-i18n="dropModelHere">Drop a 3D model here</strong>
+                <span data-i18n="modelFormats">GLB, GLTF, OBJ, FBX or MTL files</span>
+                <div class="empty-actions">
+                  <button class="button button-ghost button-small" id="model-import-button" type="button" data-i18n="chooseModel">Choose model</button>
+                </div>
+              </div>
+            </div>
+            <footer class="canvas-footer">
+              <span id="source-file-label" data-i18n="noImageLoaded">No image loaded</span>
+              <span class="footer-hint" data-i18n="moveScaleHint">Drag to move · corner to scale</span>
+            </footer>
+          </article>
+
+          <article class="canvas-panel panel-frame result-panel" id="result-panel">
+            <header class="panel-header">
+              <div>
+                <p class="section-kicker section-kicker-accent" data-i18n="outputKicker">02 / generated output</p>
+                <h2 data-i18n="pixelArtResult">Pixel art result</h2>
+              </div>
+              <span class="panel-badge panel-badge-accent" id="result-colors">— / 48 colores</span>
+            </header>
+            <div class="canvas-toolbar">
+              <div class="canvas-tool-group" aria-label="Result zoom" data-i18n-aria-label="resultZoom">
+                <span class="micro-label" data-i18n="view">View</span>
+                <button class="icon-button" id="result-zoom-out" type="button" aria-label="Zoom out" data-i18n-aria-label="zoomOut">−</button>
+                <output id="result-zoom-value">100%</output>
+                <button class="icon-button" id="result-zoom-in" type="button" aria-label="Zoom in" data-i18n-aria-label="zoomIn">+</button>
+              </div>
+              <button class="text-button" id="result-fit" type="button" data-i18n="fit">Fit</button>
+              <span class="result-status" id="result-status" data-i18n="waitingForImage">Waiting for image</span>
+            </div>
+            <div class="canvas-surface result-surface" id="result-surface" data-empty="true">
+              <canvas id="result-canvas" aria-label="Pixel art result canvas" data-i18n-aria-label="resultCanvas"></canvas>
+              <div class="result-empty" id="result-empty">
+                <div class="result-empty-mark" aria-hidden="true">▦</div>
+                <strong data-i18n="resultAppearsHere">Your result will appear here</strong>
+                <span data-i18n="importToStart">Import an image to start the forge.</span>
+              </div>
+            </div>
+            <footer class="canvas-footer">
+              <span id="result-dimensions">PNG · 128 × 128</span>
+              <span class="footer-hint" data-i18n="onePixelPerCell">The grid shows one pixel per cell</span>
+            </footer>
+          </article>
+        </section>
+
+        <section class="source-treatment panel-frame" aria-labelledby="source-treatment-title">
+          <div class="treatment-heading">
+            <div>
+              <p class="section-kicker" data-i18n="treatmentKicker">02 / source treatment</p>
+              <h2 id="source-treatment-title" data-i18n="sourceTreatment">Source treatment</h2>
+            </div>
+            <span class="treatment-note" data-i18n="nonDestructive">Non-destructive</span>
+          </div>
+          <div class="treatment-controls">
+            <label class="effect-toggle">
+              <input id="remove-background-toggle" type="checkbox" />
+              <span class="toggle-track"><span></span></span>
+              <span><strong data-i18n="removeBackground">Remove background</strong><small data-i18n="removeBackgroundHelp">Flood fill from the image edges</small></span>
+            </label>
+            <label class="effect-toggle">
+              <input id="border-toggle" type="checkbox" />
+              <span class="toggle-track"><span></span></span>
+              <span><strong data-i18n="addBorder">Add border</strong><small data-i18n="addBorderHelp">Draw outside visible pixels</small></span>
+            </label>
+            <div class="border-control" id="border-control">
+              <label for="border-color" data-i18n="borderColor">Border color</label>
+              <div class="color-control"><input id="border-color" type="color" value="#131313" /><output id="border-color-value">#131313</output></div>
+            </div>
+            <div class="border-control" id="border-width-control">
+              <div class="range-card-header"><label for="border-width" data-i18n="borderWidth">Border width</label><output id="border-width-value">2 px</output></div>
+              <input id="border-width" type="range" min="1" max="8" step="1" value="2" />
+            </div>
+          </div>
+        </section>
+
+        <section class="pipeline panel-frame" aria-labelledby="pipeline-title">
+          <div class="pipeline-heading">
+            <div>
+              <p class="section-kicker" data-i18n="pipelineKicker">03 / processing pipeline</p>
+              <h2 id="pipeline-title" data-i18n="tuneForge">Tune the forge</h2>
+            </div>
+            <div class="pipeline-actions">
+              <label class="live-toggle">
+                <input id="live-toggle" type="checkbox" checked />
+                <span class="toggle-track"><span></span></span>
+                <span data-i18n="livePreview">Live preview</span>
+              </label>
+              <button class="button button-primary" id="generate-button" type="button" disabled><span aria-hidden="true">✦</span> <span data-i18n="generate">Generate</span></button>
+            </div>
+          </div>
+          <div class="pipeline-review">
+            <div class="pipeline-control-column">
+          <div class="pipeline-controls">
+            <div class="range-card">
+              <div class="range-card-header"><label for="palette-range" data-i18n="indexedPalette">Indexed palette</label><output id="palette-value">48 colors</output></div>
+              <input id="palette-range" type="range" min="2" max="48" step="1" value="48" />
+              <div class="range-meta"><span>2</span><span data-i18n="oklabAccent">OKLab · preserves accents</span><span>48</span></div>
+            </div>
+            <div class="range-card">
+              <div class="range-card-header"><label for="contrast-range" data-i18n="contrast">Contrast</label><output id="contrast-value">0%</output></div>
+              <input id="contrast-range" type="range" min="0" max="100" step="1" value="0" />
+              <div class="range-meta"><span data-i18n="soft">Soft</span><span data-i18n="luminanceCurve">Luminance curve</span><span data-i18n="bold">Bold</span></div>
+            </div>
+            <div class="range-card">
+              <div class="range-card-header"><label for="edges-range" data-i18n="edgeStrength">Edge strength</label><output id="edges-value">0%</output></div>
+              <input id="edges-range" type="range" min="0" max="100" step="1" value="0" />
+              <div class="range-meta"><span data-i18n="clean">Clean</span><span data-i18n="sobelEdgePass">Sobel edge pass</span><span data-i18n="ink">Ink</span></div>
+            </div>
+          </div>
+          <div class="pipeline-note"><span aria-hidden="true">i</span> <span data-i18n="pipelineOrder">Order: source treatment → palette → contrast → edges → cell majority. The original image is never modified.</span></div>
+            </div>
+        <aside class="output-proof" aria-labelledby="output-proof-title">
+          <header class="proof-heading">
+            <div>
+              <p class="section-kicker section-kicker-accent" data-i18n="proofKicker">04 / output proof</p>
+              <h3 id="output-proof-title" data-i18n="proofTitle">1:1 output preview</h3>
+            </div>
+            <span class="proof-dimensions" id="proof-dimensions">128 × 128</span>
+          </header>
+          <div class="proof-grid">
+            <figure class="proof-card proof-card-light">
+              <figcaption data-i18n="whiteBackground">White background</figcaption>
+              <div class="proof-stage"><canvas id="proof-white-canvas" aria-label="Output on white background" data-i18n-aria-label="whitePreview"></canvas></div>
+            </figure>
+            <figure class="proof-card proof-card-dark">
+              <figcaption data-i18n="blackBackground">Black background</figcaption>
+              <div class="proof-stage"><canvas id="proof-black-canvas" aria-label="Output on black background" data-i18n-aria-label="blackPreview"></canvas></div>
+            </figure>
+          </div>
+          <p class="proof-status" id="proof-status" data-i18n="proofWaiting">Generate an image to inspect transparency.</p>
+        </aside>
+      </div>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <span><span class="footer-rune">◆</span> <span data-i18n="builtLocally">Built locally for images worth keeping.</span></span>
+        <span class="footer-meta">
+          <a class="footer-source-link" href="https://github.com/Maetschl/PixelForge" target="_blank" rel="noopener noreferrer" data-i18n="sourceCode">Source code</a>
+          <span>Pixel Forge / v1.0</span>
+        </span>
+      </footer>
+    </div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="./image-pipeline.js"></script>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

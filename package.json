@@ -1,0 +1,12 @@
+{
+  "name": "pixelforge",
+  "version": "1.0.0",
+  "private": false,
+  "description": "A local-only pixel art editor for 2D images and 3D models.",
+  "type": "module",
+  "scripts": {
+    "test": "node --check dist/app.js && node tests/pipeline.test.mjs && node tests/model-mode.test.mjs && node tests/site.test.mjs",
+    "dev": "python3 -m http.server 4173 --directory dist"
+  },
+  "license": "MIT"
+}

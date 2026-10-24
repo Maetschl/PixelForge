@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="736" height="736" viewBox="0 0 736 736">
+  <title>PixelForge original sample illustration</title>
+  <desc>A small amber forge with cyan crystal accents on a warm paper background.</desc>
+  <rect width="736" height="736" fill="#f4edda"/>
+  <circle cx="112" cy="112" r="58" fill="#e6d6b5"/>
+  <circle cx="632" cy="142" r="82" fill="#eadfca"/>
+  <path d="M90 610c95-26 168-27 278-4 114 24 189 17 278-16" fill="none" stroke="#d5bd8e" stroke-width="12" stroke-linecap="round"/>
+  <path d="M169 554h398l-25 91H194z" fill="#332d32" stroke="#171820" stroke-width="12"/>
+  <path d="M213 554h310l-25-255H238z" fill="#854d32" stroke="#171820" stroke-width="12"/>
+  <path d="M238 299h260l48 55H190z" fill="#c67b39" stroke="#171820" stroke-width="12"/>
+  <path d="M294 299V236h148v63" fill="#ba6937" stroke="#171820" stroke-width="12"/>
+  <path d="M264 445h208v109H264z" fill="#171820"/>
+  <path d="M293 468h150v86H293z" fill="#bf6c38"/>
+  <path d="M318 487h100v67H318z" fill="#f1b451"/>
+  <path d="M170 554h396l-30 26H201z" fill="#f1b451" stroke="#171820" stroke-width="10"/>
+  <path d="M210 365h83v58h-83zM444 365h83v58h-83z" fill="#2f323a" stroke="#171820" stroke-width="10"/>
+  <path d="M222 379h59v29h-59zM456 379h59v29h-59z" fill="#69d8d4"/>
+  <path d="M326 158h84l-10 52h-64z" fill="#69d8d4" stroke="#171820" stroke-width="10"/>
+  <path d="M312 158l56-72 56 72z" fill="#8ee7de" stroke="#171820" stroke-width="10"/>
+  <path d="M368 86v72" stroke="#d9fff4" stroke-width="7"/>
+  <path d="M352 125h32M340 143h56" stroke="#d9fff4" stroke-width="6"/>
+  <path d="M100 270l21-17 21 17-21 17zM608 300l18-15 18 15-18 15zM104 462l14-12 14 12-14 12z" fill="#f1b451"/>
+  <g fill="#69d8d4">
+    <circle cx="127" cy="332" r="8"/><circle cx="611" cy="417" r="9"/><circle cx="579" cy="224" r="6"/>
+  </g>
+</svg>
