@@ -1108,4 +1108,3 @@ updateSourceTreatmentUI();
 updateModeUI();
 
 renderAll();
-loadRandomSample();
