@@ -4,8 +4,7 @@ import { GLTFLoader } from './vendor/three/examples/jsm/loaders/GLTFLoader.js';
 import { OBJLoader } from './vendor/three/examples/jsm/loaders/OBJLoader.js';
 import { MTLLoader } from './vendor/three/examples/jsm/loaders/MTLLoader.js';
 import { FBXLoader } from './vendor/three/examples/jsm/loaders/FBXLoader.js';
-
-const pipeline = window.PixelForgePipeline;
+import * as pipeline from './pipeline-core.mjs';
 
 const localeMeta = {
   en: { flag: '🇬🇧', name: 'English' },
@@ -81,8 +80,8 @@ const locales = {
   },
 };
 
-Object.assign(locales.en, { localStudio: 'Local pixel art studio', sourceKicker: '01 / source canvas', outputKicker: '02 / generated output', treatmentKicker: '02 / source treatment', pipelineKicker: '03 / processing pipeline' });
-Object.assign(locales.es, { localStudio: 'Estudio local de pixel art', sourceKicker: '01 / lienzo fuente', outputKicker: '02 / resultado generado', treatmentKicker: '02 / tratamiento de fuente', pipelineKicker: '03 / pipeline de procesamiento' });
+Object.assign(locales.en, { localStudio: 'Local pixelart studio', sourceKicker: '01 / source canvas', outputKicker: '02 / generated output', treatmentKicker: '02 / source treatment', pipelineKicker: '03 / processing pipeline' });
+Object.assign(locales.es, { localStudio: 'Estudio local de pixelart', sourceKicker: '01 / lienzo fuente', outputKicker: '02 / resultado generado', treatmentKicker: '02 / tratamiento de fuente', pipelineKicker: '03 / pipeline de procesamiento' });
 Object.assign(locales.ja, { localStudio: 'ローカルピクセルアートスタジオ', sourceKicker: '01 / 元画像キャンバス', outputKicker: '02 / 生成結果', treatmentKicker: '02 / 元画像処理', pipelineKicker: '03 / 処理パイプライン' });
 Object.assign(locales.zh, { localStudio: '本地像素画工作室', sourceKicker: '01 / 原图画布', outputKicker: '02 / 生成结果', treatmentKicker: '02 / 原图处理', pipelineKicker: '03 / 处理管线' });
 Object.assign(locales.pt, { localStudio: 'Estúdio local de pixel art', sourceKicker: '01 / tela original', outputKicker: '02 / resultado gerado', treatmentKicker: '02 / tratamento da fonte', pipelineKicker: '03 / pipeline de processamento' });
@@ -109,12 +108,12 @@ const previewLabels = {
 Object.entries(previewLabels).forEach(([code, labels]) => Object.assign(locales[code], labels));
 
 const sourceLabels = {
-  en: { sourceCode: 'Source code' },
-  es: { sourceCode: 'Código fuente' },
-  ja: { sourceCode: 'ソースコード' },
-  zh: { sourceCode: '源代码' },
-  pt: { sourceCode: 'Código-fonte' },
-  ru: { sourceCode: 'Исходный код' },
+  en: { sourceCode: 'Source code', mcpGuide: 'MCP / agent guide' },
+  es: { sourceCode: 'Código fuente', mcpGuide: 'Guía MCP / agentes' },
+  ja: { sourceCode: 'ソースコード', mcpGuide: 'MCP / エージェントガイド' },
+  zh: { sourceCode: '源代码', mcpGuide: 'MCP / 代理指南' },
+  pt: { sourceCode: 'Código-fonte', mcpGuide: 'Guia MCP / agentes' },
+  ru: { sourceCode: 'Исходный код', mcpGuide: 'Руководство MCP / агенты' },
 };
 Object.entries(sourceLabels).forEach(([code, labels]) => Object.assign(locales[code], labels));
 
@@ -221,7 +220,7 @@ let sourceEffectTimer = null;
 let modelLoadToken = 0;
 
 try {
-  worker = new Worker('./pipeline-worker.js');
+  worker = new Worker('./pipeline-worker.js', { type: 'module' });
   workerReady = true;
   worker.addEventListener('message', handleWorkerMessage);
   worker.addEventListener('error', () => {

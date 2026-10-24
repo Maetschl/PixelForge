@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "pixelforge": {
+      "command": "node",
+      "args": ["/absolute/path/to/PixelForge/mcp/server.mjs"]
+    }
+  }
+}

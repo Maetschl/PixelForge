@@ -2,11 +2,20 @@
   "name": "pixelforge",
   "version": "1.0.0",
   "private": false,
-  "description": "A local-only pixel art editor for 2D images and 3D models.",
+  "description": "A local-only pixelart editor for 2D images and 3D models with a local MCP server.",
   "type": "module",
+  "keywords": ["pixelart", "pixel-art", "mcp", "image-processing", "threejs", "local-first"],
   "scripts": {
-    "test": "node --check dist/app.js && node tests/pipeline.test.mjs && node tests/model-mode.test.mjs && node tests/site.test.mjs",
-    "dev": "python3 -m http.server 4173 --directory dist"
+    "dev": "python3 -m http.server 4173 --directory dist",
+    "mcp": "node mcp/server.mjs",
+    "test:web": "node --check dist/app.js && node tests/pipeline.test.mjs && node tests/model-mode.test.mjs && node tests/site.test.mjs",
+    "test:mcp": "node tests/mcp.test.mjs",
+    "test": "npm run test:web && npm run test:mcp"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "sharp": "^0.35.5",
+    "zod": "^4.6.7"
+  }
 }

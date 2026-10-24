@@ -1,7 +1,6 @@
-(function exposePipeline(global) {
-  'use strict';
+// Shared, browser-safe pipeline core. It is imported by the web app, worker, and MCP.
 
-  function clamp(value, min, max) { return Math.min(max, Math.max(min, value)); }
+function clamp(value, min, max) { return Math.min(max, Math.max(min, value)); }
 
   function parseHexColor(value) {
     const normalized = String(value || '#131313').replace('#', '');
@@ -369,5 +368,4 @@
     return { pixels: output.buffer, usedColors: used.size, paletteSize: palette.length, elapsedMs: Date.now() - started };
   }
 
-  global.PixelForgePipeline = { processImageData, applySourceEffects, removeBackgroundFloodFill, addAlphaBorder };
-})(typeof self !== 'undefined' ? self : window);
+export { processImageData, applySourceEffects, removeBackgroundFloodFill, addAlphaBorder };

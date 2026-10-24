@@ -1,12 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import vm from 'node:vm';
-
-const source = fs.readFileSync(new URL('../dist/image-pipeline.js', import.meta.url), 'utf8');
-const context = { self: {}, console };
-vm.createContext(context);
-vm.runInContext(source, context);
-const { processImageData, applySourceEffects } = context.self.PixelForgePipeline;
+const { processImageData, applySourceEffects } = await import('../dist/pipeline-core.mjs');
 
 function pixels(width, height, fill) {
   const data = new Uint8ClampedArray(width * height * 4);
