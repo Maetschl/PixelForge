@@ -38,7 +38,7 @@
           </div>
           <button class="button button-ghost button-small" id="import-button" type="button" data-i18n="importImage">Import image</button>
           <input id="file-input" type="file" accept="image/*,.glb,.gltf,.obj,.fbx,.mtl" multiple hidden />
-          <button class="button button-primary button-small" id="export-button" type="button" disabled data-i18n="exportPng">Export PNG</button>
+          <button class="button button-primary button-small floating-export-button" id="export-button" type="button" disabled data-i18n="exportPng">Export PNG</button>
         </div>
       </header>
 
@@ -84,7 +84,10 @@
             <header class="panel-header">
               <div>
                 <p class="section-kicker" data-i18n="sourceKicker">01 / source canvas</p>
-                <h2 data-i18n="sourceImage">Source image</h2>
+                <div class="panel-title-line">
+                  <h2 data-i18n="sourceImage">Source image</h2>
+                  <button class="text-button source-clear-button" id="clear-source-button" type="button" disabled data-i18n="clean" data-i18n-aria-label="cleanSourceAria">Clean</button>
+                </div>
               </div>
               <span class="panel-badge" id="source-dimensions">128 × 128</span>
             </header>
@@ -262,6 +265,6 @@
       </footer>
     </div>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <script type="module" src="./app.js?v=6bbd545"></script>
+    <script type="module" src="./app.js?v=clean-export-20261025"></script>
   </body>
 </html>

@@ -18,6 +18,7 @@ for (const file of [
 ]) exists(file);
 
 const html = read('dist/index.html');
+const styles = read('dist/styles.css');
 const app = read('dist/app.js');
 const workflow = read('.github/workflows/pages.yml');
 const readme = read('README.md');
@@ -29,6 +30,9 @@ assert.match(html, /https:\/\/github\.com\/Maetschl\/PixelForge/);
 assert.match(html, /data-i18n="sourceCode"/);
 assert.match(html, /data-i18n="mcpGuide"/);
 assert.match(html, /data-i18n="assetPrompt"/);
+assert.match(html, /id="clear-source-button"/);
+assert.match(html, /data-i18n="clean"/);
+assert.match(html, /class="[^"]*floating-export-button[^"]*"[^>]*id="export-button"/);
 assert.match(html, /name="keywords"[^>]*pixelart/);
 assert.doesNotMatch(app, /test-mouse-adventure\.png/);
 assert.match(app, /pixel-forge\.locale/);
@@ -45,6 +49,11 @@ assert.match(app, /removeBackground: true, borderEnabled: true, borderWidth: 1, 
 assert.match(app, /function loadRandomSample\(\)/);
 assert.match(app, /els\.sampleButton\.addEventListener\('click', loadRandomSample\)/);
 assert.doesNotMatch(app, /renderAll\(\);\s*loadRandomSample\(\);/);
+assert.match(app, /function clearActiveSource\(\)/);
+assert.match(app, /els\.clearSourceButton\.addEventListener\('click', clearActiveSource\)/);
+assert.match(app, /state\.requestId \+= 1/);
+assert.match(styles, /\.floating-export-button \{[^}]*position: fixed/);
+assert.match(styles, /\.topbar-actions \{[^}]*padding-right:/);
 assert.match(workflow, /actions\/deploy-pages@v4/);
 assert.match(workflow, /path: dist/);
 assert.doesNotMatch(html, /(?:src|href)="https?:\/\/(?!github\.com\/Maetschl\/PixelForge)/);

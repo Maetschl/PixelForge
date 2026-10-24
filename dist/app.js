@@ -129,6 +129,16 @@ const sourceLabels = {
 };
 Object.entries(sourceLabels).forEach(([code, labels]) => Object.assign(locales[code], labels));
 
+const cleanLabels = {
+  en: { clean: 'Clean', cleanSourceAria: 'Clear source image' },
+  es: { clean: 'Limpiar', cleanSourceAria: 'Limpiar imagen fuente' },
+  ja: { clean: 'クリア', cleanSourceAria: '元画像をクリア' },
+  zh: { clean: '清除', cleanSourceAria: '清除原图' },
+  pt: { clean: 'Limpar', cleanSourceAria: 'Limpar imagem original' },
+  ru: { clean: 'Очистить', cleanSourceAria: 'Очистить исходное изображение' },
+};
+Object.entries(cleanLabels).forEach(([code, labels]) => Object.assign(locales[code], labels));
+
 const localeStorageKey = 'pixel-forge.locale';
 let currentLocale = 'en';
 
@@ -194,6 +204,7 @@ const els = {
   resultDimensions: document.querySelector('#result-dimensions'),
   resultColors: document.querySelector('#result-colors'),
   sourceFileLabel: document.querySelector('#source-file-label'),
+  clearSourceButton: document.querySelector('#clear-source-button'),
   moveScaleHint: document.querySelector('#source-panel .footer-hint'),
   resultStatus: document.querySelector('#result-status'),
   generateButton: document.querySelector('#generate-button'),
@@ -357,6 +368,7 @@ function updateModeUI() {
   const resultCopy = els.resultEmpty.querySelectorAll('span, strong');
   if (resultCopy[0]) resultCopy[0].textContent = t(is3d ? 'modelResultAppearsHere' : 'resultAppearsHere');
   if (resultCopy[1]) resultCopy[1].textContent = t(is3d ? 'importModelToStart' : 'importToStart');
+  els.clearSourceButton.disabled = !hasActiveSource();
   els.generateButton.disabled = !hasActiveSource() || state.busy;
   els.exportButton.disabled = !state.output;
   els.resultStatus.textContent = state.output && state.lastElapsedMs != null
@@ -944,6 +956,44 @@ function handlePipelineResult(requestId, result) {
   requestAnimationFrame(updateCanvasViews);
 }
 
+function clearActiveSource() {
+  clearTimeout(liveTimer);
+  clearTimeout(sourceEffectTimer);
+  liveTimer = null;
+  sourceEffectTimer = null;
+  state.requestId += 1;
+  state.busy = false;
+
+  if (state.mode === '3d') {
+    modelLoadToken += 1;
+    if (state.three.modelRoot) {
+      state.three.scene?.remove(state.three.modelRoot);
+      disposeThreeObject(state.three.modelRoot);
+    }
+    state.three.objectUrls.forEach((url) => URL.revokeObjectURL(url));
+    state.three.objectUrls = [];
+    state.three.modelRoot = null;
+    state.model.root = null;
+    state.model.name = '';
+    state.model.files = [];
+    els.threeLoading.hidden = true;
+  } else {
+    if (state.sourceUrl?.startsWith('blob:')) URL.revokeObjectURL(state.sourceUrl);
+    state.sourceUrl = null;
+    state.image = null;
+    state.fileName = '';
+    state.baseScale = 1;
+    state.transform = { x: state.resolution / 2, y: state.resolution / 2, scale: 1 };
+  }
+
+  state.output = null;
+  state.usedColors = null;
+  state.lastElapsedMs = null;
+  saveActiveOutput();
+  renderAll();
+  setStatus(t('readyToImport'), 'ready');
+}
+
 function loadImageSource(source, fileName, revokeSource = false, settings = null) {
   if (state.sourceUrl?.startsWith('blob:')) URL.revokeObjectURL(state.sourceUrl);
   state.sourceUrl = revokeSource ? source : null;
@@ -1062,6 +1112,7 @@ els.fileInput.addEventListener('change', (event) => {
 });
 els.mode2d.addEventListener('click', () => switchMode('2d'));
 els.mode3d.addEventListener('click', () => switchMode('3d'));
+els.clearSourceButton.addEventListener('click', clearActiveSource);
 els.exportButton.addEventListener('click', exportPng);
 els.resolutionInput.addEventListener('change', (event) => resizeDocument(event.target.value));
 document.querySelectorAll('.preset-button').forEach((button) => button.addEventListener('click', () => resizeDocument(button.dataset.resolution)));

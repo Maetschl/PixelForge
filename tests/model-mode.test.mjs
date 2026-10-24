@@ -19,6 +19,9 @@ assert.match(app, /new MTLLoader/);
 assert.match(app, /new FBXLoader/);
 assert.match(app, /readRenderTargetPixels/);
 assert.match(app, /setURLModifier/);
+assert.match(app, /disposeThreeObject\(state\.three\.modelRoot\)/);
+assert.match(app, /state\.three\.objectUrls\.forEach\(\(url\) => URL\.revokeObjectURL\(url\)\)/);
+assert.match(app, /state\.model\.root = null/);
 assert.match(fixture, /o PixelForgeCube/);
 assert.match(fixture, /f 1 2 3 4/);
 
