@@ -22,6 +22,11 @@ const sampleAssets = [
 ];
 let lastSampleIndex = -1;
 
+const exampleSettings = {
+  pipeline: { palette: 24, contrast: 42, edges: 0 },
+  sourceEffects: { removeBackground: true, borderEnabled: true, borderWidth: 1, borderColor: '#131313' },
+};
+
 const locales = {
   en: {
     brandHome: 'Pixel Forge home', localOnly: 'local only', importImage: 'Import image', exportPng: 'Export PNG',
@@ -939,11 +944,15 @@ function handlePipelineResult(requestId, result) {
   requestAnimationFrame(updateCanvasViews);
 }
 
-function loadImageSource(source, fileName, revokeSource = false) {
+function loadImageSource(source, fileName, revokeSource = false, settings = null) {
   if (state.sourceUrl?.startsWith('blob:')) URL.revokeObjectURL(state.sourceUrl);
   state.sourceUrl = revokeSource ? source : null;
   const image = new Image();
   image.onload = () => {
+    if (settings) {
+      Object.assign(state.pipeline, settings.pipeline || {});
+      Object.assign(state.sourceEffects, settings.sourceEffects || {});
+    }
     state.image = image;
     state.fileName = fileName || 'pasted-image.png';
     state.baseScale = calculateBaseScale();
@@ -955,12 +964,21 @@ function loadImageSource(source, fileName, revokeSource = false) {
     els.generateButton.disabled = false;
     els.exportButton.disabled = true;
     updatePipelineUI();
+    updateSourceTreatmentUI();
     renderAll();
     setStatus(t('sourceReady'), 'ready');
     scheduleGenerate(80);
   };
   image.onerror = () => { if (revokeSource) URL.revokeObjectURL(source); showToast(t('imageReadError')); };
   image.src = source;
+}
+
+function loadRandomSample() {
+  let index = Math.floor(Math.random() * sampleAssets.length);
+  if (sampleAssets.length > 1 && index === lastSampleIndex) index = (index + 1) % sampleAssets.length;
+  lastSampleIndex = index;
+  const sample = sampleAssets[index];
+  loadImageSource(sample.source, sample.name, false, exampleSettings);
 }
 
 function loadImageFile(file) {
@@ -1036,13 +1054,7 @@ function exportPng() {
 els.importButton.addEventListener('click', () => els.fileInput.click());
 els.emptyImportButton.addEventListener('click', () => els.fileInput.click());
 els.modelImportButton.addEventListener('click', () => els.fileInput.click());
-els.sampleButton.addEventListener('click', () => {
-  let index = Math.floor(Math.random() * sampleAssets.length);
-  if (sampleAssets.length > 1 && index === lastSampleIndex) index = (index + 1) % sampleAssets.length;
-  lastSampleIndex = index;
-  const sample = sampleAssets[index];
-  loadImageSource(sample.source, sample.name);
-});
+els.sampleButton.addEventListener('click', loadRandomSample);
 els.fileInput.addEventListener('change', (event) => {
   if (state.mode === '3d') loadModelFiles(event.target.files);
   else loadImageFile(event.target.files[0]);
@@ -1096,3 +1108,4 @@ updateSourceTreatmentUI();
 updateModeUI();
 
 renderAll();
+loadRandomSample();
