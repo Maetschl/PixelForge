@@ -10,6 +10,7 @@ const exists = (relative) => assert.ok(fs.existsSync(path.join(root, relative)),
 for (const file of [
   'dist/index.html', 'dist/styles.css', 'dist/app.js', 'dist/image-pipeline.js',
   'dist/pipeline-core.mjs', 'dist/pipeline-worker.js', 'dist/favicon.svg', 'dist/assets/pixel-forge-sample.svg',
+  'dist/assets/examples/pixelart-crystal-skull.png', 'dist/assets/examples/pixelart-harbor-village.png', 'dist/assets/examples/pixelart-volcano-forge.png',
   'dist/vendor/three/build/three.module.js', 'dist/vendor/three/examples/jsm/loaders/FBXLoader.js',
   '.github/workflows/pages.yml', 'README.md', 'AGENTS.md', 'LICENSE', 'THIRD_PARTY_NOTICES.md', 'package.json',
   'mcp/server.mjs', 'mcp/image-io.mjs', 'mcp/pixelforge.example.json',
@@ -27,16 +28,23 @@ const agents = read('AGENTS.md');
 assert.match(html, /https:\/\/github\.com\/Maetschl\/PixelForge/);
 assert.match(html, /data-i18n="sourceCode"/);
 assert.match(html, /data-i18n="mcpGuide"/);
+assert.match(html, /data-i18n="assetPrompt"/);
 assert.match(html, /name="keywords"[^>]*pixelart/);
-assert.match(app, /\.\/assets\/pixel-forge-sample\.svg/);
+assert.doesNotMatch(app, /test-mouse-adventure\.png/);
 assert.match(app, /pixel-forge\.locale/);
 assert.match(app, /\.\/pipeline-core\.mjs/);
 assert.match(app, /type: 'module'/);
 assert.match(app, /Local pixelart studio/);
+assert.match(app, /pixelart-crystal-skull\.png/);
+assert.match(app, /pixelart-harbor-village\.png/);
+assert.match(app, /pixelart-volcano-forge\.png/);
+assert.match(app, /Math\.random\(\)/);
 assert.match(workflow, /actions\/deploy-pages@v4/);
 assert.match(workflow, /path: dist/);
 assert.doesNotMatch(html, /(?:src|href)="https?:\/\/(?!github\.com\/Maetschl\/PixelForge)/);
 assert.match(readme, /pixelart/);
+assert.match(readme, /## Asset generation prompt/);
+assert.match(readme, /Generate \[DESCRIPTION OF THE OBJECT, CHARACTER, OR LOCATION\]/);
 assert.ok(packageJson.keywords.includes('pixelart'));
 assert.match(skill, /pixelate_image/);
 assert.match(agents, /local-only/);

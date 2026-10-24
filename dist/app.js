@@ -15,6 +15,13 @@ const localeMeta = {
   ru: { flag: '🇷🇺', name: 'Русский' },
 };
 
+const sampleAssets = [
+  { source: './assets/examples/pixelart-crystal-skull.png', name: 'pixelart-crystal-skull.png' },
+  { source: './assets/examples/pixelart-harbor-village.png', name: 'pixelart-harbor-village.png' },
+  { source: './assets/examples/pixelart-volcano-forge.png', name: 'pixelart-volcano-forge.png' },
+];
+let lastSampleIndex = -1;
+
 const locales = {
   en: {
     brandHome: 'Pixel Forge home', localOnly: 'local only', importImage: 'Import image', exportPng: 'Export PNG',
@@ -108,12 +115,12 @@ const previewLabels = {
 Object.entries(previewLabels).forEach(([code, labels]) => Object.assign(locales[code], labels));
 
 const sourceLabels = {
-  en: { sourceCode: 'Source code', mcpGuide: 'MCP / agent guide' },
-  es: { sourceCode: 'Código fuente', mcpGuide: 'Guía MCP / agentes' },
-  ja: { sourceCode: 'ソースコード', mcpGuide: 'MCP / エージェントガイド' },
-  zh: { sourceCode: '源代码', mcpGuide: 'MCP / 代理指南' },
-  pt: { sourceCode: 'Código-fonte', mcpGuide: 'Guia MCP / agentes' },
-  ru: { sourceCode: 'Исходный код', mcpGuide: 'Руководство MCP / агенты' },
+  en: { sourceCode: 'Source code', mcpGuide: 'MCP / agent guide', assetPrompt: 'Asset prompt' },
+  es: { sourceCode: 'Código fuente', mcpGuide: 'Guía MCP / agentes', assetPrompt: 'Prompt de assets' },
+  ja: { sourceCode: 'ソースコード', mcpGuide: 'MCP / エージェントガイド', assetPrompt: 'アセット用プロンプト' },
+  zh: { sourceCode: '源代码', mcpGuide: 'MCP / 代理指南', assetPrompt: '素材提示词' },
+  pt: { sourceCode: 'Código-fonte', mcpGuide: 'Guia MCP / agentes', assetPrompt: 'Prompt de assets' },
+  ru: { sourceCode: 'Исходный код', mcpGuide: 'Руководство MCP / агенты', assetPrompt: 'Промпт для ассетов' },
 };
 Object.entries(sourceLabels).forEach(([code, labels]) => Object.assign(locales[code], labels));
 
@@ -1029,7 +1036,13 @@ function exportPng() {
 els.importButton.addEventListener('click', () => els.fileInput.click());
 els.emptyImportButton.addEventListener('click', () => els.fileInput.click());
 els.modelImportButton.addEventListener('click', () => els.fileInput.click());
-els.sampleButton.addEventListener('click', () => loadImageSource('./assets/pixel-forge-sample.svg', 'pixel-forge-sample.svg'));
+els.sampleButton.addEventListener('click', () => {
+  let index = Math.floor(Math.random() * sampleAssets.length);
+  if (sampleAssets.length > 1 && index === lastSampleIndex) index = (index + 1) % sampleAssets.length;
+  lastSampleIndex = index;
+  const sample = sampleAssets[index];
+  loadImageSource(sample.source, sample.name);
+});
 els.fileInput.addEventListener('change', (event) => {
   if (state.mode === '3d') loadModelFiles(event.target.files);
   else loadImageFile(event.target.files[0]);
