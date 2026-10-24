@@ -60,22 +60,41 @@ The MCP v1 processes 2D images independently of the browser UI. The web editor c
 This prompt has worked well for generating simple, readable assets that PixelForge can turn into `pixelart` for fantasy maps and games. Replace the bracketed description with the subject you want:
 
 ```text
-Generate [DESCRIPTION OF THE OBJECT, CHARACTER, OR LOCATION] as an asset for a fantasy map or game.
+Generate [SUBJECT] as an isolated asset for a fantasy map or game.
 
-Use a simplified cartoon style with large shapes, clear silhouettes, flat colors, and a balanced palette. Create volume through a few clearly defined shadow areas, without gradients, textures, or realistic rendering. Keep outlines very thin and subtle; avoid thick black borders and let adjacent colors define most shapes.
+BACKGROUND — REQUIRED:
+Use a genuinely transparent background with an alpha channel. Everything outside the asset must be fully transparent, including gaps between branches, structures, and other elements. Do not render a white background, a colored background, or a checkerboard pattern. Avoid white fringes, halos, and stray pixels around the edges.
 
-Keep the detail level low: retain the essential features that make the subject recognizable, while removing small decorations, repetitive lines, and surface details. It should remain clearly readable at a small size.
+STYLE:
+Use a simplified cartoon style with large shapes, clear silhouettes, flat colors, and a balanced palette. Create volume through a few clearly defined, solid shadow areas. No gradients, textures, realistic rendering, bloom, or soft lighting effects.
 
-Use a mostly frontal, slightly elevated view, with enough perspective to reveal depth and top surfaces, without a pronounced side angle.
+Keep outlines very thin and subtle. Avoid thick black borders; let adjacent colors define most shapes.
 
-Keep the composition compact and self-contained, centered on a pure white background with generous margins. Show the entire subject without cropping. For locations, group the elements into a single map landmark and restrict any ground or water to a small, organically shaped footprint.
+DETAIL:
+Retain only the essential features that make the subject recognizable. Remove small decorations, repetitive lines, and unnecessary surface details. The asset must remain clearly readable at a small size.
 
-No background scenery, horizon, frames, square platforms, text, or labels. Maintain coherent proportions and well-constructed shapes.
+PERSPECTIVE:
+Use a mostly frontal, slightly elevated view, revealing some depth and top surfaces without a pronounced side angle.
 
-If a reference image is attached, use it to match the visual style, level of detail, and perspective without copying its subject matter.
+COMPOSITION:
+Create one compact, self-contained asset, centered with generous transparent margins. Show the entire subject without cropping. Keep coherent proportions and well-constructed shapes.
+
+For locations, group all elements into a single map landmark. Include only a small, organically shaped footprint of solid ground or water when needed. This footprint is part of the asset; everything beyond it must be transparent. Do not create a rectangular tile, pedestal, or floating chunk of terrain.
+
+EDGES:
+Use clean, smooth, anti-aliased edges. Keep foreground colors opaque, with partial transparency limited to edge smoothing. No cast shadows outside the asset’s footprint.
+
+EXCLUSIONS:
+No background scenery, sky, horizon, frames, square platforms, text, labels, watermarks, or unrelated objects.
+
+REFERENCE:
+If a reference image is attached, match its visual style, level of detail, and perspective without copying its subject matter or background.
+
+OUTPUT:
+A PNG with genuine background transparency, ready to place directly over a map or game scene.
 ```
 
-For the best PixelForge result, keep the subject centered, use a pure background, and avoid small details that disappear during indexed-color sampling.
+For the best PixelForge result, keep the subject centered, preserve genuine alpha transparency, and avoid small details that disappear during indexed-color sampling.
 
 ## Project structure
 
