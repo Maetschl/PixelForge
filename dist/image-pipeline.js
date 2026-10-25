@@ -1,6 +1,11 @@
 // Shared, browser-safe pipeline core. It is imported by the web app, worker, and MCP.
 
 function clamp(value, min, max) { return Math.min(max, Math.max(min, value)); }
+function countVisiblePixels(data) {
+  let visible = 0;
+  for (let index = 3; index < data.length; index += 4) if (data[index] >= 8) visible += 1;
+  return visible;
+}
 
   function parseHexColor(value) {
     const normalized = String(value || '#131313').replace('#', '');
@@ -185,6 +190,166 @@ function clamp(value, min, max) { return Math.min(max, Math.max(min, value)); }
       }
     }
     return output;
+  }
+
+  function pixelDistance(data, firstIndex, secondIndex) {
+    const firstAlpha = data[firstIndex + 3];
+    const secondAlpha = data[secondIndex + 3];
+    const visibility = Math.max(firstAlpha, secondAlpha) / 255;
+    if (visibility < .04) return null;
+    const colorDistance = (Math.abs(data[firstIndex] - data[secondIndex]) + Math.abs(data[firstIndex + 1] - data[secondIndex + 1]) + Math.abs(data[firstIndex + 2] - data[secondIndex + 2])) / (255 * 3);
+    const alphaDistance = Math.abs(firstAlpha - secondAlpha) / 255;
+    return (colorDistance * .78 + alphaDistance * .22) * visibility;
+  }
+
+  function perfectPixelCandidateScore(input, width, height, pixelSize, stride) {
+    const logicalWidth = Math.max(1, Math.round(width / pixelSize));
+    const logicalHeight = Math.max(1, Math.round(height / pixelSize));
+    const effectiveWidth = width / logicalWidth;
+    const effectiveHeight = height / logicalHeight;
+    let within = 0; let withinCount = 0; let boundary = 0; let boundaryCount = 0;
+    const sampleStep = Math.max(1, stride);
+    for (let y = 0; y < height; y += sampleStep) {
+      for (let x = 0; x < width - sampleStep; x += sampleStep) {
+        const first = (y * width + x) * 4;
+        const next = (y * width + x + sampleStep) * 4;
+        const distance = pixelDistance(input, first, next);
+        if (distance == null) continue;
+        const firstCell = Math.floor(x / effectiveWidth);
+        const nextCell = Math.floor((x + sampleStep) / effectiveWidth);
+        if (firstCell === nextCell) { within += distance; withinCount += 1; }
+        else { boundary += distance; boundaryCount += 1; }
+      }
+    }
+    for (let x = 0; x < width; x += sampleStep) {
+      for (let y = 0; y < height - sampleStep; y += sampleStep) {
+        const first = (y * width + x) * 4;
+        const next = ((y + sampleStep) * width + x) * 4;
+        const distance = pixelDistance(input, first, next);
+        if (distance == null) continue;
+        const firstCell = Math.floor(y / effectiveHeight);
+        const nextCell = Math.floor((y + sampleStep) / effectiveHeight);
+        if (firstCell === nextCell) { within += distance; withinCount += 1; }
+        else { boundary += distance; boundaryCount += 1; }
+      }
+    }
+    if (!withinCount || !boundaryCount) return -Infinity;
+    const withinMean = within / withinCount;
+    const boundaryMean = boundary / boundaryCount;
+    const boundaryCoverage = Math.min(1, (boundaryCount / (withinCount + boundaryCount)) * 4);
+    return (boundaryMean - withinMean) * boundaryCoverage;
+  }
+
+  function detectPerfectPixelSize(input, width, height, config = {}) {
+    const minimum = clamp(Number(config.minPixelSize) || 2, 1, 64);
+    const maximum = clamp(Number(config.maxPixelSize) || 64, minimum, 128);
+    const stride = Math.max(1, Math.ceil(Math.max(width, height) / 192));
+    let best = { pixelSize: minimum, score: -Infinity };
+    for (let candidate = minimum; candidate <= maximum + .001; candidate += .25) {
+      const score = perfectPixelCandidateScore(input, width, height, candidate, stride);
+      if (score > best.score) best = { pixelSize: candidate, score };
+    }
+    const refineStart = Math.max(minimum, best.pixelSize - .5);
+    const refineEnd = Math.min(maximum, best.pixelSize + .5);
+    for (let candidate = refineStart; candidate <= refineEnd + .001; candidate += .025) {
+      const score = perfectPixelCandidateScore(input, width, height, candidate, stride);
+      if (score > best.score) best = { pixelSize: candidate, score };
+    }
+    const neighboringScores = [best.pixelSize - .5, best.pixelSize, best.pixelSize + .5]
+      .filter((candidate) => candidate >= minimum && candidate <= maximum)
+      .map((candidate) => perfectPixelCandidateScore(input, width, height, candidate, stride));
+    const neighborAverage = neighboringScores.reduce((sum, score) => sum + Math.max(0, score), 0) / Math.max(1, neighboringScores.length);
+    const confidence = clamp(best.score <= 0 ? 0 : best.score / Math.max(.001, best.score + neighborAverage + .02), 0, 1);
+    return { pixelSize: Math.round(best.pixelSize * 100) / 100, confidence, score: best.score };
+  }
+
+  function reducePerfectPixel(input, width, height, pixelSize) {
+    const logicalWidth = Math.max(1, Math.round(width / pixelSize));
+    const logicalHeight = Math.max(1, Math.round(height / pixelSize));
+    const output = new Uint8ClampedArray(logicalWidth * logicalHeight * 4);
+    for (let y = 0; y < logicalHeight; y += 1) for (let x = 0; x < logicalWidth; x += 1) {
+      const sourceX = Math.min(width - 1, Math.max(0, Math.floor((x + .5) * width / logicalWidth)));
+      const sourceY = Math.min(height - 1, Math.max(0, Math.floor((y + .5) * height / logicalHeight)));
+      const sourceIndex = (sourceY * width + sourceX) * 4;
+      const outputIndex = (y * logicalWidth + x) * 4;
+      output[outputIndex] = input[sourceIndex];
+      output[outputIndex + 1] = input[sourceIndex + 1];
+      output[outputIndex + 2] = input[sourceIndex + 2];
+      output[outputIndex + 3] = input[sourceIndex + 3];
+    }
+    return { pixels: output, width: logicalWidth, height: logicalHeight };
+  }
+
+  function fitPerfectPixel(input, width, height, targetResolution, transform = {}) {
+    const baseScale = Math.min(1, targetResolution / width, targetResolution / height);
+    const scale = baseScale * clamp(Number(transform.scale) || 1, .12, 8);
+    const outputWidth = Math.max(1, Math.round(width * scale));
+    const outputHeight = Math.max(1, Math.round(height * scale));
+    const output = new Uint8ClampedArray(targetResolution * targetResolution * 4);
+    const centerX = Number.isFinite(Number(transform.x)) ? Number(transform.x) : targetResolution / 2;
+    const centerY = Number.isFinite(Number(transform.y)) ? Number(transform.y) : targetResolution / 2;
+    const left = Math.round(centerX - outputWidth / 2);
+    const top = Math.round(centerY - outputHeight / 2);
+    for (let y = 0; y < outputHeight; y += 1) for (let x = 0; x < outputWidth; x += 1) {
+      if (left + x < 0 || left + x >= targetResolution || top + y < 0 || top + y >= targetResolution) continue;
+      const sourceX = Math.min(width - 1, Math.floor(x / scale));
+      const sourceY = Math.min(height - 1, Math.floor(y / scale));
+      const sourceIndex = (sourceY * width + sourceX) * 4;
+      const outputIndex = ((top + y) * targetResolution + left + x) * 4;
+      output[outputIndex] = input[sourceIndex];
+      output[outputIndex + 1] = input[sourceIndex + 1];
+      output[outputIndex + 2] = input[sourceIndex + 2];
+      output[outputIndex + 3] = input[sourceIndex + 3];
+    }
+    return { pixels: output, width: targetResolution, height: targetResolution, outputWidth, outputHeight, left, top };
+  }
+
+  function processPerfectPixel(input, width, height, config = {}) {
+    const started = Date.now();
+    const alphaCutoffEnabled = config.alphaCutoffEnabled !== false;
+    const alphaCutoffPercent = clamp(Number(config.alphaCutoffPercent ?? 20), 0, 100);
+    const alphaCutoff = Math.floor(alphaCutoffPercent * 255 / 100);
+    let sourcePixels = alphaCutoffEnabled ? applyAlphaCutoff(input, alphaCutoff) : new Uint8ClampedArray(input);
+    if (config.removeBackground) sourcePixels = removeBackgroundFloodFill(sourcePixels, width, height, clamp(Number(config.backgroundTolerance) || 0.08, 0.01, 0.5));
+    if (alphaCutoffEnabled) sourcePixels = applyAlphaCutoff(sourcePixels, alphaCutoff);
+    const detection = config.pixelSizeMode === 'manual'
+      ? { pixelSize: clamp(Number(config.pixelSize) || 14, 1, 128), confidence: 1, score: null }
+      : detectPerfectPixelSize(sourcePixels, width, height, config);
+    const reduced = reducePerfectPixel(sourcePixels, width, height, detection.pixelSize);
+    const targetResolution = clamp(Math.round(Number(config.targetResolution || config.resolution || 128)), 16, 512);
+    const fitted = fitPerfectPixel(reduced.pixels, reduced.width, reduced.height, targetResolution, config.transform);
+    const finalPixels = config.borderEnabled
+      ? addAlphaBorder(fitted.pixels, targetResolution, targetResolution, config.borderWidth, config.borderColor)
+      : fitted.pixels;
+    const used = new Set(); let transparentPixels = 0;
+    for (let index = 0; index < finalPixels.length; index += 4) {
+      if (finalPixels[index + 3] < 8) transparentPixels += 1;
+      else used.add(`${finalPixels[index]},${finalPixels[index + 1]},${finalPixels[index + 2]}`);
+    }
+    const trace = config.trace ? [
+      { id: 'alpha-cutoff', enabled: alphaCutoffEnabled, width, height, visiblePixels: countVisiblePixels(sourcePixels), threshold: alphaCutoff },
+      { id: 'background-removal', enabled: config.removeBackground === true, width, height, visiblePixels: countVisiblePixels(sourcePixels), tolerance: Number(config.backgroundTolerance ?? 0.08) },
+      { id: 'pixel-detection', enabled: config.pixelSizeMode !== 'manual', width, height, visiblePixels: countVisiblePixels(sourcePixels), pixelSize: detection.pixelSize, confidence: detection.confidence },
+      { id: 'nearest-reduction', enabled: true, width: reduced.width, height: reduced.height, visiblePixels: countVisiblePixels(reduced.pixels) },
+      { id: 'canvas-fit', enabled: true, width: targetResolution, height: targetResolution, visiblePixels: countVisiblePixels(fitted.pixels) },
+      { id: 'final-border', enabled: config.borderEnabled === true, width: targetResolution, height: targetResolution, visiblePixels: countVisiblePixels(finalPixels), borderWidth: config.borderWidth ?? 2 },
+    ] : null;
+    return {
+      pixels: finalPixels.buffer,
+      width: targetResolution,
+      height: targetResolution,
+      logicalWidth: reduced.width,
+      logicalHeight: reduced.height,
+      detectedPixelSize: detection.pixelSize,
+      detectionConfidence: detection.confidence,
+      outputWidth: fitted.outputWidth,
+      outputHeight: fitted.outputHeight,
+      usedColors: used.size,
+      transparentPixels,
+      borderApplied: Boolean(config.borderEnabled),
+      trace,
+      elapsedMs: Date.now() - started,
+    };
   }
 
   function applySourceEffects(input, width, height, config = {}) {
@@ -462,4 +627,4 @@ function clamp(value, min, max) { return Math.min(max, Math.max(min, value)); }
     };
   }
 
-export { processImageData, applySourceEffects, applyAlphaCutoff, removeBackgroundFloodFill, addAlphaBorder };
+export { processImageData, processPerfectPixel, detectPerfectPixelSize, reducePerfectPixel, fitPerfectPixel, applySourceEffects, applyAlphaCutoff, removeBackgroundFloodFill, addAlphaBorder };

@@ -58,6 +58,7 @@
         <section class="toolbar panel-frame" aria-label="Document settings" data-i18n-aria-label="documentSettings">
           <div class="mode-toggle" role="group" aria-label="Editor mode" data-i18n-aria-label="editorMode">
             <button class="mode-button is-active" id="mode-2d" type="button" data-mode="2d" aria-pressed="true">2D</button>
+            <button class="mode-button" id="mode-pp" type="button" data-mode="pp" aria-pressed="false" data-i18n="modePP">PP</button>
             <button class="mode-button" id="mode-3d" type="button" data-mode="3d" aria-pressed="false">3D</button>
           </div>
           <div class="toolbar-block">
@@ -109,8 +110,8 @@
               </div>
               <div class="drop-hint" id="drop-hint">
                 <div class="drop-icon" aria-hidden="true">＋</div>
-                <strong data-i18n="dropImageHere">Drop an image here</strong>
-                <span data-i18n="orPaste">or paste it from the clipboard</span>
+                <strong id="drop-image-title" data-i18n="dropImageHere">Drop an image here</strong>
+                <span id="drop-image-help" data-i18n="orPaste">or paste it from the clipboard</span>
                 <div class="empty-actions">
                   <button class="button button-ghost button-small" id="empty-import-button" type="button" data-i18n="chooseFile">Choose file</button>
                   <button class="button button-ghost button-small" id="sample-button" type="button" data-i18n="loadExample">Load example</button>
@@ -192,6 +193,29 @@
               <input id="border-width" type="range" min="1" max="8" step="1" value="2" />
             </div>
           </div>
+        </section>
+
+        <section class="pp-settings panel-frame" id="pp-settings" hidden aria-labelledby="pp-settings-title">
+          <div class="pp-settings-heading">
+            <div>
+              <p class="section-kicker section-kicker-accent" data-i18n="ppKicker">Perfect Pixel</p>
+              <h2 id="pp-settings-title" data-i18n="ppPixelSize">Pixel size</h2>
+            </div>
+            <span class="pp-badge" data-i18n="ppPreservesColors">Original colors preserved</span>
+          </div>
+          <div class="pp-settings-grid">
+            <div class="pp-mode-controls">
+              <label class="pp-choice"><input id="pp-auto" type="radio" name="pp-pixel-size-mode" checked /><span data-i18n="ppAuto">Auto detect</span></label>
+              <label class="pp-choice"><input id="pp-manual" type="radio" name="pp-pixel-size-mode" /><span data-i18n="ppManual">Manual override</span></label>
+              <label class="pp-size-control" for="pp-pixel-size"><span data-i18n="ppPixelSize">Pixel size</span><output id="pp-pixel-size-value">14.00 px</output><input id="pp-pixel-size" type="range" min="2" max="64" step="0.01" value="14" /></label>
+            </div>
+            <dl class="pp-metrics">
+              <div><dt data-i18n="ppDetected">Detected pixel size</dt><dd id="pp-detected">—</dd></div>
+              <div><dt data-i18n="ppLogical">Logical size</dt><dd id="pp-logical">—</dd></div>
+              <div><dt data-i18n="ppConfidence">Confidence</dt><dd id="pp-confidence">—</dd></div>
+            </dl>
+          </div>
+          <p class="pp-note"><span aria-hidden="true">◆</span><span id="pp-pipeline-note" data-i18n="ppPipelineNote">PP keeps original colors and reduces repeated blocks without palette, contrast, or Sobel.</span></p>
         </section>
 
         <section class="pipeline panel-frame" aria-labelledby="pipeline-title">
@@ -308,6 +332,6 @@
       </footer>
     </div>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <script type="module" src="./app.js?v=advanced-pipeline-20261025-1"></script>
+    <script type="module" src="./app.js?v=pp-mode-20261025-1"></script>
   </body>
 </html>

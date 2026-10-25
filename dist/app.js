@@ -20,6 +20,7 @@ const sampleAssets = [
   { source: './assets/examples/pixelart-harbor-village.png', name: 'pixelart-harbor-village.png' },
   { source: './assets/examples/pixelart-volcano-forge.png', name: 'pixelart-volcano-forge.png' },
 ];
+const perfectPixelSample = { source: './assets/examples/pixelperfect-ranger-source.png', name: 'pixelperfect-ranger-source.png' };
 let lastSampleIndex = -1;
 
 const exampleSettings = {
@@ -116,6 +117,16 @@ const modeLabels = {
 };
 Object.entries(modeLabels).forEach(([code, labels]) => Object.assign(locales[code], labels));
 
+const ppLabels = {
+  en: { modePP: 'PP', ppSource: 'Perfect Pixel source', ppKicker: '01 / perfect pixel source', ppResultKicker: '02 / perfect pixel output', ppResult: 'Perfect Pixel result', ppDropImage: 'Drop a large pixelart image here', ppDropHelp: 'or paste a pixelart sprite from the clipboard', ppImportToStart: 'Import a large pixelart image to detect its blocks.', ppSourceHint: 'Drag to move · corner to scale', ppDetected: 'Detected pixel size', ppLogical: 'Logical size', ppConfidence: 'Confidence', ppPixelSize: 'Pixel size', ppAuto: 'Auto detect', ppManual: 'Manual override', ppNearest: 'Nearest-neighbor sampling', ppPreservesColors: 'Original colors preserved', ppPipelineNote: 'PP keeps original colors and reduces repeated blocks without palette, contrast, or Sobel.', ppReady: 'Perfect Pixel ready', ppProcessing: 'Detecting pixel blocks…', ppDetectionError: 'Could not detect a pixel block size.', ppOutputStatus: 'PP · {logicalWidth} × {logicalHeight} → {value} × {value}', ppColors: 'original colors', ppNotApplicable: 'Not used in PP mode' },
+  es: { modePP: 'PP', ppSource: 'Fuente Perfect Pixel', ppKicker: '01 / fuente perfect pixel', ppResultKicker: '02 / salida perfect pixel', ppResult: 'Resultado Perfect Pixel', ppDropImage: 'Arrastra aquí una imagen pixelart grande', ppDropHelp: 'o pega un sprite pixelart desde el portapapeles', ppImportToStart: 'Importa una imagen pixelart grande para detectar sus bloques.', ppSourceHint: 'Arrastra para mover · esquina para escalar', ppDetected: 'Tamaño de pixel detectado', ppLogical: 'Tamaño lógico', ppConfidence: 'Confianza', ppPixelSize: 'Tamaño de pixel', ppAuto: 'Detección automática', ppManual: 'Ajuste manual', ppNearest: 'Muestreo nearest neighbor', ppPreservesColors: 'Colores originales preservados', ppPipelineNote: 'PP conserva los colores originales y reduce bloques repetidos sin paleta, contraste ni Sobel.', ppReady: 'Perfect Pixel listo', ppProcessing: 'Detectando bloques…', ppDetectionError: 'No se pudo detectar el tamaño del pixel.', ppOutputStatus: 'PP · {logicalWidth} × {logicalHeight} → {value} × {value}', ppColors: 'colores originales', ppNotApplicable: 'No se usa en modo PP' },
+  ja: { modePP: 'PP', ppSource: 'Perfect Pixel 元画像', ppKicker: '01 / perfect pixel 元画像', ppResultKicker: '02 / perfect pixel 出力', ppResult: 'Perfect Pixel 結果', ppDropImage: '大きなピクセルアート画像をドロップ', ppDropHelp: 'またはクリップボードから貼り付け', ppImportToStart: '大きなピクセルアート画像を読み込んでブロックを検出します。', ppSourceHint: 'ドラッグで移動 · 角で拡大縮小', ppDetected: '検出ピクセルサイズ', ppLogical: '論理サイズ', ppConfidence: '信頼度', ppPixelSize: 'ピクセルサイズ', ppAuto: '自動検出', ppManual: '手動指定', ppNearest: '最近傍サンプリング', ppPreservesColors: '元の色を保持', ppPipelineNote: 'PPはパレット、コントラスト、Sobelを使わず元の色を保持してブロックを縮小します。', ppReady: 'Perfect Pixel の準備完了', ppProcessing: 'ブロックを検出中…', ppDetectionError: 'ピクセルサイズを検出できませんでした。', ppOutputStatus: 'PP · {logicalWidth} × {logicalHeight} → {value} × {value}', ppColors: '元の色', ppNotApplicable: 'PPモードでは使用しません' },
+  zh: { modePP: 'PP', ppSource: 'Perfect Pixel 原图', ppKicker: '01 / perfect pixel 原图', ppResultKicker: '02 / perfect pixel 输出', ppResult: 'Perfect Pixel 结果', ppDropImage: '将大型像素画拖到这里', ppDropHelp: '或从剪贴板粘贴像素画', ppImportToStart: '导入大型像素画以检测像素块。', ppSourceHint: '拖动移动 · 拖角缩放', ppDetected: '检测到的像素大小', ppLogical: '逻辑尺寸', ppConfidence: '置信度', ppPixelSize: '像素大小', ppAuto: '自动检测', ppManual: '手动覆盖', ppNearest: '最近邻采样', ppPreservesColors: '保留原始颜色', ppPipelineNote: 'PP保留原始颜色并缩小重复像素块，不使用调色板、对比度或 Sobel。', ppReady: 'Perfect Pixel 已准备好', ppProcessing: '正在检测像素块…', ppDetectionError: '无法检测像素大小。', ppOutputStatus: 'PP · {logicalWidth} × {logicalHeight} → {value} × {value}', ppColors: '原始颜色', ppNotApplicable: 'PP 模式不使用' },
+  pt: { modePP: 'PP', ppSource: 'Fonte Perfect Pixel', ppKicker: '01 / fonte perfect pixel', ppResultKicker: '02 / saída perfect pixel', ppResult: 'Resultado Perfect Pixel', ppDropImage: 'Arraste uma imagem pixelart grande aqui', ppDropHelp: 'ou cole um sprite pixelart da área de transferência', ppImportToStart: 'Importe uma imagem pixelart grande para detectar os blocos.', ppSourceHint: 'Arraste para mover · canto para redimensionar', ppDetected: 'Tamanho de pixel detectado', ppLogical: 'Tamanho lógico', ppConfidence: 'Confiança', ppPixelSize: 'Tamanho do pixel', ppAuto: 'Detecção automática', ppManual: 'Ajuste manual', ppNearest: 'Amostragem nearest neighbor', ppPreservesColors: 'Cores originais preservadas', ppPipelineNote: 'PP preserva as cores originais e reduz blocos repetidos sem paleta, contraste ou Sobel.', ppReady: 'Perfect Pixel pronto', ppProcessing: 'Detectando blocos…', ppDetectionError: 'Não foi possível detectar o tamanho do pixel.', ppOutputStatus: 'PP · {logicalWidth} × {logicalHeight} → {value} × {value}', ppColors: 'cores originais', ppNotApplicable: 'Não usado no modo PP' },
+  ru: { modePP: 'PP', ppSource: 'Источник Perfect Pixel', ppKicker: '01 / источник perfect pixel', ppResultKicker: '02 / результат perfect pixel', ppResult: 'Результат Perfect Pixel', ppDropImage: 'Перетащите большую пиксельную картинку', ppDropHelp: 'или вставьте пиксельный спрайт из буфера', ppImportToStart: 'Импортируйте большую пиксельную картинку для поиска блоков.', ppSourceHint: 'Перетаскивайте · угол меняет масштаб', ppDetected: 'Размер найденного пикселя', ppLogical: 'Логический размер', ppConfidence: 'Уверенность', ppPixelSize: 'Размер пикселя', ppAuto: 'Автоопределение', ppManual: 'Ручная настройка', ppNearest: 'Сэмплирование ближайшего соседа', ppPreservesColors: 'Исходные цвета сохранены', ppPipelineNote: 'PP сохраняет исходные цвета и уменьшает повторяющиеся блоки без палитры, контраста и Sobel.', ppReady: 'Perfect Pixel готов', ppProcessing: 'Поиск блоков…', ppDetectionError: 'Не удалось определить размер пикселя.', ppOutputStatus: 'PP · {logicalWidth} × {logicalHeight} → {value} × {value}', ppColors: 'исходных цветов', ppNotApplicable: 'Не используется в режиме PP' },
+};
+Object.entries(ppLabels).forEach(([code, labels]) => Object.assign(locales[code], labels));
+
 const previewLabels = {
   en: { proofKicker: '04 / output proof', proofTitle: '1:1 output preview', whiteBackground: 'White background', blackBackground: 'Black background', whitePreview: 'Output on white background', blackPreview: 'Output on black background', proofWaiting: 'Generate an image to inspect transparency.', proofReady: 'Exact output · no grid overlay' },
   es: { proofKicker: '04 / prueba de salida', proofTitle: 'Vista de salida 1:1', whiteBackground: 'Fondo blanco', blackBackground: 'Fondo negro', whitePreview: 'Salida sobre fondo blanco', blackPreview: 'Salida sobre fondo negro', proofWaiting: 'Genera una imagen para revisar la transparencia.', proofReady: 'Salida exacta · sin grilla' },
@@ -173,6 +184,19 @@ const state = {
   fileName: '',
   baseScale: 1,
   transform: { x: 64, y: 64, scale: 1 },
+  pp: {
+    image: null,
+    sourceUrl: null,
+    fileName: '',
+    baseScale: 1,
+    transform: { x: 64, y: 64, scale: 1 },
+    pixelSizeMode: 'auto',
+    pixelSize: 14,
+    detectedPixelSize: null,
+    detectionConfidence: null,
+    logicalWidth: null,
+    logicalHeight: null,
+  },
   viewZoom: { source: 1, result: 1 },
   pipeline: {
     palette: 48,
@@ -198,7 +222,7 @@ const state = {
   lastTrace: null,
   busy: false,
   requestId: 0,
-  outputs: { '2d': { output: null, usedColors: null, lastElapsedMs: null, trace: null }, '3d': { output: null, usedColors: null, lastElapsedMs: null, trace: null } },
+  outputs: { '2d': { output: null, usedColors: null, lastElapsedMs: null, trace: null }, pp: { output: null, usedColors: null, lastElapsedMs: null, trace: null }, '3d': { output: null, usedColors: null, lastElapsedMs: null, trace: null } },
   model: { root: null, name: '', files: [] },
   three: { renderer: null, scene: null, camera: null, controls: null, modelRoot: null, objectUrls: [], initialized: false, error: false, initialCamera: null },
 };
@@ -206,6 +230,7 @@ const state = {
 const els = {
   fileInput: document.querySelector('#file-input'),
   mode2d: document.querySelector('#mode-2d'),
+  modePP: document.querySelector('#mode-pp'),
   mode3d: document.querySelector('#mode-3d'),
   importButton: document.querySelector('#import-button'),
   languagePicker: document.querySelector('#language-picker'),
@@ -230,6 +255,8 @@ const els = {
   sourceSurface: document.querySelector('#source-surface'),
   resultSurface: document.querySelector('#result-surface'),
   dropHint: document.querySelector('#drop-hint'),
+  dropImageTitle: document.querySelector('#drop-image-title'),
+  dropImageHelp: document.querySelector('#drop-image-help'),
   dropHint3d: document.querySelector('#drop-hint-3d'),
   modelImportButton: document.querySelector('#model-import-button'),
   resultEmpty: document.querySelector('#result-empty'),
@@ -278,6 +305,15 @@ const els = {
   resultZoomValue: document.querySelector('#result-zoom-value'),
   sourceFit: document.querySelector('#source-fit'),
   sourceCenter: document.querySelector('#source-center'),
+  ppSettings: document.querySelector('#pp-settings'),
+  ppAuto: document.querySelector('#pp-auto'),
+  ppManual: document.querySelector('#pp-manual'),
+  ppPixelSize: document.querySelector('#pp-pixel-size'),
+  ppPixelSizeValue: document.querySelector('#pp-pixel-size-value'),
+  ppDetected: document.querySelector('#pp-detected'),
+  ppLogical: document.querySelector('#pp-logical'),
+  ppConfidence: document.querySelector('#pp-confidence'),
+  ppPipelineNote: document.querySelector('#pp-pipeline-note'),
   resultFit: document.querySelector('#result-fit'),
   toast: document.querySelector('#toast'),
 };
@@ -296,7 +332,7 @@ let sourceEffectTimer = null;
 let modelLoadToken = 0;
 
 try {
-  worker = new Worker('./pipeline-worker.js?v=advanced-pipeline-20261025-1', { type: 'module' });
+  worker = new Worker('./pipeline-worker.js?v=pp-mode-20261025-1', { type: 'module' });
   workerReady = true;
   worker.addEventListener('message', handleWorkerMessage);
   worker.addEventListener('error', () => {
@@ -377,7 +413,15 @@ function showToast(message) {
 }
 
 function hasActiveSource() {
-  return state.mode === '3d' ? Boolean(state.three.modelRoot) : Boolean(state.image);
+  return state.mode === '3d' ? Boolean(state.three.modelRoot) : Boolean(activeImageState().image);
+}
+
+function activeImageState() {
+  return state.mode === 'pp' ? state.pp : state;
+}
+
+function activeImage() {
+  return activeImageState().image;
 }
 
 function saveActiveOutput() {
@@ -394,39 +438,48 @@ function restoreModeOutput() {
 
 function updateModeUI() {
   const is3d = state.mode === '3d';
-  els.mode2d.classList.toggle('is-active', !is3d);
+  const isPP = state.mode === 'pp';
+  els.mode2d.classList.toggle('is-active', state.mode === '2d');
+  els.modePP.classList.toggle('is-active', isPP);
   els.mode3d.classList.toggle('is-active', is3d);
-  els.mode2d.setAttribute('aria-pressed', String(!is3d));
+  els.mode2d.setAttribute('aria-pressed', String(state.mode === '2d'));
+  els.modePP.setAttribute('aria-pressed', String(isPP));
   els.mode3d.setAttribute('aria-pressed', String(is3d));
   els.importButton.textContent = t(is3d ? 'importModel' : 'importImage');
   els.fileInput.accept = is3d ? '.glb,.gltf,.obj,.fbx,.mtl' : 'image/*';
   els.fileInput.multiple = is3d;
   els.sourceCanvas.hidden = is3d;
   els.source3dStage.hidden = !is3d;
-  els.dropHint.hidden = is3d || Boolean(state.image);
+  els.dropHint.hidden = is3d || Boolean(activeImage());
   els.dropHint3d.hidden = !is3d || Boolean(state.three.modelRoot);
   els.sourceFit.hidden = is3d;
   els.sourceCenter.textContent = t(is3d ? 'resetView' : 'center');
   els.sourceCenter.dataset.i18n = is3d ? 'resetView' : 'center';
   els.sourceSurface.dataset.mode = state.mode;
   els.sourceSurface.dataset.empty = hasActiveSource() ? 'false' : 'true';
+  if (els.dropImageTitle) els.dropImageTitle.textContent = t(isPP ? 'ppDropImage' : 'dropImageHere');
+  if (els.dropImageHelp) els.dropImageHelp.textContent = t(isPP ? 'ppDropHelp' : 'orPaste');
   const sourceTitle = document.querySelector('#source-panel h2');
   const sourceKicker = document.querySelector('#source-panel .section-kicker');
-  if (sourceTitle) sourceTitle.textContent = t(is3d ? 'modelSource' : 'sourceImage');
-  if (sourceKicker) sourceKicker.textContent = t(is3d ? 'modelKicker' : 'sourceKicker');
+  const resultTitle = document.querySelector('#result-panel h2');
+  const resultKicker = document.querySelector('#result-panel .section-kicker');
+  if (sourceTitle) sourceTitle.textContent = t(is3d ? 'modelSource' : (isPP ? 'ppSource' : 'sourceImage'));
+  if (sourceKicker) sourceKicker.textContent = t(is3d ? 'modelKicker' : (isPP ? 'ppKicker' : 'sourceKicker'));
+  if (resultTitle) resultTitle.textContent = t(isPP ? 'ppResult' : 'pixelArtResult');
+  if (resultKicker) resultKicker.textContent = t(isPP ? 'ppResultKicker' : (is3d ? 'outputKicker' : 'outputKicker'));
   els.sourceCanvas.setAttribute('aria-label', t(is3d ? 'modelCanvas' : 'sourceCanvas'));
   els.sourceFileLabel.textContent = is3d
     ? (state.model.name ? `${state.model.name} · 3D` : t('noModelLoaded'))
-    : (state.image ? `${state.fileName} · ${state.image.naturalWidth} × ${state.image.naturalHeight}` : t('noImageLoaded'));
-  els.moveScaleHint.textContent = t(is3d ? 'orbitZoomHint' : 'moveScaleHint');
+    : (activeImage() ? `${activeImageState().fileName} · ${activeImage().naturalWidth} × ${activeImage().naturalHeight}` : t('noImageLoaded'));
+  els.moveScaleHint.textContent = t(is3d ? 'orbitZoomHint' : (isPP ? 'ppSourceHint' : 'moveScaleHint'));
   const resultCopy = els.resultEmpty.querySelectorAll('span, strong');
-  if (resultCopy[0]) resultCopy[0].textContent = t(is3d ? 'modelResultAppearsHere' : 'resultAppearsHere');
-  if (resultCopy[1]) resultCopy[1].textContent = t(is3d ? 'importModelToStart' : 'importToStart');
+  if (resultCopy[0]) resultCopy[0].textContent = t(is3d ? 'modelResultAppearsHere' : (isPP ? 'ppResult' : 'resultAppearsHere'));
+  if (resultCopy[1]) resultCopy[1].textContent = t(is3d ? 'importModelToStart' : (isPP ? 'ppImportToStart' : 'importToStart'));
   els.clearSourceButton.disabled = !hasActiveSource();
   els.generateButton.disabled = !hasActiveSource() || state.busy;
   els.exportButton.disabled = !state.output;
   els.resultStatus.textContent = state.output && state.lastElapsedMs != null
-    ? t('generated', { value: state.lastElapsedMs })
+    ? (isPP ? t('ppOutputStatus', { logicalWidth: state.pp.logicalWidth || '—', logicalHeight: state.pp.logicalHeight || '—', value: state.resolution }) : t('generated', { value: state.lastElapsedMs }))
     : (hasActiveSource() ? t('waiting') : t('waitingForImage'));
   updateResolutionUI();
   updatePipelineUI();
@@ -628,6 +681,11 @@ function loadModelFiles(fileList) {
 
 function switchMode(mode) {
   if (mode === state.mode) return;
+  if (!['2d', 'pp', '3d'].includes(mode)) return;
+  clearTimeout(liveTimer);
+  liveTimer = null;
+  state.requestId += 1;
+  state.busy = false;
   saveActiveOutput();
   state.mode = mode;
   restoreModeOutput();
@@ -657,7 +715,8 @@ function updateResolutionUI() {
 function updateAdvancedUI() {
   const advanced = state.pipeline.advanced;
   const stageEntries = new Map((state.lastTrace || []).map((stage) => [stage.id, stage]));
-  els.advancedPipeline.hidden = !advanced.enabled;
+  els.advancedPipeline.hidden = !advanced.enabled || state.mode === 'pp';
+  els.advancedToggle.hidden = state.mode === 'pp';
   els.advancedToggle.setAttribute('aria-pressed', String(advanced.enabled));
   els.advancedModeLabel.dataset.i18n = advanced.enabled ? 'basic' : 'advanced';
   els.advancedModeLabel.textContent = t(advanced.enabled ? 'basic' : 'advanced');
@@ -710,9 +769,22 @@ function updatePipelineUI() {
   els.paletteValue.textContent = t('colors', { value: state.pipeline.palette });
   els.contrastValue.textContent = `${state.pipeline.contrast}%`;
   els.edgesValue.textContent = `${state.pipeline.edges}%`;
+  const isPP = state.mode === 'pp';
   els.resultColors.textContent = state.usedColors == null
-    ? `— / ${t('colors', { value: state.pipeline.palette })}`
-    : `${state.usedColors} / ${t('colors', { value: state.pipeline.palette })}`;
+    ? (isPP ? `— ${t('ppColors')}` : `— / ${t('colors', { value: state.pipeline.palette })}`)
+    : (isPP ? `${state.usedColors} ${t('ppColors')}` : `${state.usedColors} / ${t('colors', { value: state.pipeline.palette })}`);
+  [els.paletteRange, els.contrastRange, els.edgesRange].forEach((input) => { input.disabled = isPP; });
+  els.ppSettings.hidden = !isPP;
+  els.ppPipelineNote.textContent = isPP ? t('ppPipelineNote') : '';
+  const pp = state.pp;
+  els.ppAuto.checked = pp.pixelSizeMode === 'auto';
+  els.ppManual.checked = pp.pixelSizeMode === 'manual';
+  els.ppPixelSize.value = pp.pixelSize;
+  els.ppPixelSize.disabled = pp.pixelSizeMode !== 'manual';
+  els.ppPixelSizeValue.textContent = `${Number(pp.pixelSize).toFixed(2)} px`;
+  els.ppDetected.textContent = pp.detectedPixelSize == null ? '—' : `${pp.detectedPixelSize.toFixed(2)} px`;
+  els.ppLogical.textContent = pp.logicalWidth && pp.logicalHeight ? `${pp.logicalWidth} × ${pp.logicalHeight}` : '—';
+  els.ppConfidence.textContent = pp.detectionConfidence == null ? '—' : `${Math.round(pp.detectionConfidence * 100)}%`;
   updateAdvancedUI();
 }
 
@@ -727,6 +799,13 @@ function updateSourceTreatmentUI() {
   els.borderColor.disabled = disabled;
   els.borderWidth.disabled = disabled;
   updateAdvancedUI();
+}
+
+function updatePPSettings(key, value) {
+  if (key === 'pixelSizeMode') state.pp.pixelSizeMode = value === 'manual' ? 'manual' : 'auto';
+  if (key === 'pixelSize') state.pp.pixelSize = clamp(Number(value) || 14, 2, 64);
+  updatePipelineUI();
+  if (hasActiveSource() && state.pipeline.live) scheduleGenerate(220);
 }
 
 function setupResultCanvas(canvas) {
@@ -797,17 +876,20 @@ function drawGrid(ctx2d, resolution, color = 'rgba(110, 215, 210, .11)', scale =
 }
 
 function calculateBaseScale() {
-  if (!state.image) return 1;
+  const image = activeImage();
+  if (!image) return 1;
   const padding = state.resolution * .86;
-  return Math.min(padding / state.image.naturalWidth, padding / state.image.naturalHeight);
+  return Math.min(padding / image.naturalWidth, padding / image.naturalHeight);
 }
 
 function getImageRect() {
-  if (!state.image) return null;
-  const scale = state.baseScale * state.transform.scale;
-  const width = state.image.naturalWidth * scale;
-  const height = state.image.naturalHeight * scale;
-  return { x: state.transform.x - width / 2, y: state.transform.y - height / 2, width, height };
+  const source = activeImageState();
+  const image = source.image;
+  if (!image) return null;
+  const scale = source.baseScale * source.transform.scale;
+  const width = image.naturalWidth * scale;
+  const height = image.naturalHeight * scale;
+  return { x: source.transform.x - width / 2, y: source.transform.y - height / 2, width, height };
 }
 
 function effectConfig() {
@@ -825,11 +907,11 @@ function renderTransformedPixels(size) {
   canvas.height = size;
   const composite = canvas.getContext('2d', { willReadFrequently: true });
   composite.clearRect(0, 0, size, size);
-  if (state.image) {
+  if (activeImage()) {
     const rect = getImageRect();
     composite.imageSmoothingEnabled = true;
     composite.imageSmoothingQuality = 'high';
-    composite.drawImage(state.image, rect.x * size / state.resolution, rect.y * size / state.resolution, rect.width * size / state.resolution, rect.height * size / state.resolution);
+    composite.drawImage(activeImage(), rect.x * size / state.resolution, rect.y * size / state.resolution, rect.width * size / state.resolution, rect.height * size / state.resolution);
   }
   const pixels = composite.getImageData(0, 0, size, size);
   const result = pipeline.applySourceEffects(pixels.data, size, size, effectConfig());
@@ -847,14 +929,14 @@ function drawSource() {
   const scale = setupSourceCanvas();
   const canvasSize = Math.round(resolution * scale);
   drawCheckerboard(ctx.source, canvasSize, canvasSize, Math.max(8, 8 * scale));
-  if (state.image) {
+  if (activeImage()) {
     const rect = getImageRect();
     ctx.source.putImageData(renderTransformedPixels(canvasSize), 0, 0);
     drawSelection(ctx.source, rect, scale);
   }
   drawGrid(ctx.source, resolution, 'rgba(110, 215, 210, .18)', scale);
-  els.sourceSurface.dataset.empty = state.image ? 'false' : 'true';
-  els.dropHint.hidden = Boolean(state.image);
+  els.sourceSurface.dataset.empty = activeImage() ? 'false' : 'true';
+  els.dropHint.hidden = Boolean(activeImage());
 }
 
 function drawSelection(ctx2d, rect, scale = 1) {
@@ -921,14 +1003,16 @@ function renderAll() {
 }
 
 function centerImage() {
-  state.transform.x = state.resolution / 2;
-  state.transform.y = state.resolution / 2;
+  const source = activeImageState();
+  source.transform.x = state.resolution / 2;
+  source.transform.y = state.resolution / 2;
   drawSource();
 }
 
 function fitImage() {
-  state.baseScale = calculateBaseScale();
-  state.transform.scale = 1;
+  const source = activeImageState();
+  source.baseScale = calculateBaseScale();
+  source.transform.scale = 1;
   centerImage();
   scheduleGenerate();
 }
@@ -937,16 +1021,17 @@ function resizeDocument(value) {
   const next = clamp(Math.round(Number(value) || 128), 16, 512);
   const ratio = next / state.resolution;
   state.resolution = next;
-  state.transform.x *= ratio;
-  state.transform.y *= ratio;
-  state.baseScale = calculateBaseScale();
+  const source = activeImageState();
+  source.transform.x *= ratio;
+  source.transform.y *= ratio;
+  source.baseScale = calculateBaseScale();
   state.output = null;
   state.usedColors = null;
   state.lastElapsedMs = null;
   state.lastTrace = null;
   els.exportButton.disabled = true;
-  els.resultColors.textContent = `— / ${t('colors', { value: state.pipeline.palette })}`;
-  els.resultStatus.textContent = state.image ? t('regenerating') : t('waitingForImage');
+  els.resultColors.textContent = state.mode === 'pp' ? `— ${t('ppColors')}` : `— / ${t('colors', { value: state.pipeline.palette })}`;
+  els.resultStatus.textContent = activeImage() ? t('regenerating') : t('waitingForImage');
   renderAll();
   if (hasActiveSource()) scheduleGenerate();
 }
@@ -963,28 +1048,30 @@ function hitCorner(point, rect) {
 }
 
 function handlePointerDown(event) {
-  if (state.mode !== '2d' || !state.image) return;
+  if (state.mode === '3d' || !activeImage()) return;
   event.preventDefault();
   const point = getCanvasPoint(event);
   const rect = getImageRect();
   const corner = hitCorner(point, rect);
   const inside = point.x >= rect.x && point.x <= rect.x + rect.width && point.y >= rect.y && point.y <= rect.y + rect.height;
   if (!corner && !inside) return;
-  pointerDrag = { pointerId: event.pointerId, mode: corner ? 'scale' : 'move', start: point, initial: { ...state.transform }, initialDistance: Math.hypot(point.x - state.transform.x, point.y - state.transform.y) };
+  const source = activeImageState();
+  pointerDrag = { pointerId: event.pointerId, mode: corner ? 'scale' : 'move', start: point, initial: { ...source.transform }, initialDistance: Math.hypot(point.x - source.transform.x, point.y - source.transform.y) };
   els.sourceCanvas.setPointerCapture(event.pointerId);
   els.sourceCanvas.classList.add('is-dragging');
 }
 
 function handlePointerMove(event) {
-  if (!pointerDrag || state.mode !== '2d' || !state.image) return;
+  if (!pointerDrag || state.mode === '3d' || !activeImage()) return;
+  const source = activeImageState();
   const point = getCanvasPoint(event);
   if (pointerDrag.mode === 'move') {
-    state.transform.x = pointerDrag.initial.x + point.x - pointerDrag.start.x;
-    state.transform.y = pointerDrag.initial.y + point.y - pointerDrag.start.y;
+    source.transform.x = pointerDrag.initial.x + point.x - pointerDrag.start.x;
+    source.transform.y = pointerDrag.initial.y + point.y - pointerDrag.start.y;
   } else {
-    const distance = Math.max(4, Math.hypot(point.x - state.transform.x, point.y - state.transform.y));
+    const distance = Math.max(4, Math.hypot(point.x - source.transform.x, point.y - source.transform.y));
     const nextScale = pointerDrag.initial.scale * (distance / Math.max(4, pointerDrag.initialDistance));
-    state.transform.scale = clamp(nextScale, .12, 8);
+    source.transform.scale = clamp(nextScale, .12, 8);
   }
   drawSource();
   if (state.pipeline.live) scheduleGenerate(220);
@@ -994,13 +1081,24 @@ function handlePointerUp() {
   if (!pointerDrag) return;
   pointerDrag = null;
   els.sourceCanvas.classList.remove('is-dragging');
-  if (state.mode === '2d' && state.image) scheduleGenerate(100);
+  if (state.mode !== '3d' && activeImage()) scheduleGenerate(100);
 }
 
 function renderComposite() {
   const factor = Math.min(4, Math.max(2, Math.ceil(1024 / state.resolution)));
   const width = state.resolution * factor;
   if (state.mode === '3d') return captureThreePixels(width);
+  if (state.mode === 'pp') {
+    const image = activeImage();
+    const sourceCanvas = document.createElement('canvas');
+    sourceCanvas.width = image.naturalWidth;
+    sourceCanvas.height = image.naturalHeight;
+    const sourceContext = sourceCanvas.getContext('2d', { willReadFrequently: true });
+    sourceContext.imageSmoothingEnabled = true;
+    sourceContext.imageSmoothingQuality = 'high';
+    sourceContext.drawImage(image, 0, 0);
+    return { pixels: sourceContext.getImageData(0, 0, image.naturalWidth, image.naturalHeight), width: image.naturalWidth, height: image.naturalHeight };
+  }
   return { pixels: renderTransformedPixels(width), width, height: width };
 }
 
@@ -1037,9 +1135,11 @@ function generate() {
   const requestId = ++state.requestId;
   setStatus(t('processing'), 'busy');
   els.resultStatus.textContent = t('forgeProgress');
+  if (state.mode === 'pp') setStatus(t('ppProcessing'), 'busy');
   els.generateButton.disabled = true;
   const composite = renderComposite();
   const config = {
+    mode: state.mode,
     resolution: state.resolution,
     maxColors: state.pipeline.palette,
     contrast: state.pipeline.contrast,
@@ -1053,17 +1153,23 @@ function generate() {
     edgeEnabled: state.pipeline.advanced.edgeEnabled,
     cellMajorityEnabled: state.pipeline.advanced.cellMajorityEnabled,
     cellCoverageThreshold: state.pipeline.advanced.cellCoverageThreshold,
-    sourceEffectsApplied: true,
+    sourceEffectsApplied: state.mode !== 'pp',
     trace: state.pipeline.advanced.enabled,
     borderEnabled: state.sourceEffects.borderEnabled,
     borderWidth: state.sourceEffects.borderWidth,
     borderColor: state.sourceEffects.borderColor,
+    transform: state.mode === 'pp' ? { ...state.pp.transform } : undefined,
+    pixelSizeMode: state.mode === 'pp' ? state.pp.pixelSizeMode : undefined,
+    pixelSize: state.mode === 'pp' ? state.pp.pixelSize : undefined,
+    targetResolution: state.mode === 'pp' ? state.resolution : undefined,
   };
   if (workerReady && worker) {
     const buffer = composite.pixels.data.buffer;
     worker.postMessage({ requestId, width: composite.width, height: composite.height, pixels: buffer, config }, [buffer]);
   } else {
-    setTimeout(() => handlePipelineResult(requestId, pipeline.processImageData(composite.pixels.data, composite.width, composite.height, config)), 0);
+    setTimeout(() => handlePipelineResult(requestId, state.mode === 'pp'
+      ? pipeline.processPerfectPixel(composite.pixels.data, composite.width, composite.height, config)
+      : pipeline.processImageData(composite.pixels.data, composite.width, composite.height, config)), 0);
   }
 }
 
@@ -1089,9 +1195,17 @@ function handlePipelineResult(requestId, result) {
   state.usedColors = usedColors;
   state.lastElapsedMs = result.elapsedMs;
   state.lastTrace = result.trace || null;
+  if (state.mode === 'pp') {
+    state.pp.detectedPixelSize = result.detectedPixelSize;
+    state.pp.detectionConfidence = result.detectionConfidence;
+    state.pp.logicalWidth = result.logicalWidth;
+    state.pp.logicalHeight = result.logicalHeight;
+  }
   saveActiveOutput();
   updatePipelineUI();
-  els.resultStatus.textContent = t('generated', { value: result.elapsedMs });
+  els.resultStatus.textContent = state.mode === 'pp'
+    ? t('ppOutputStatus', { logicalWidth: result.logicalWidth, logicalHeight: result.logicalHeight, value: state.resolution })
+    : t('generated', { value: result.elapsedMs });
   els.exportButton.disabled = false;
   els.generateButton.disabled = false;
   setStatus(t('forgeReady'), 'ready');
@@ -1122,12 +1236,19 @@ function clearActiveSource() {
     state.model.files = [];
     els.threeLoading.hidden = true;
   } else {
-    if (state.sourceUrl?.startsWith('blob:')) URL.revokeObjectURL(state.sourceUrl);
-    state.sourceUrl = null;
-    state.image = null;
-    state.fileName = '';
-    state.baseScale = 1;
-    state.transform = { x: state.resolution / 2, y: state.resolution / 2, scale: 1 };
+    const source = activeImageState();
+    if (source.sourceUrl?.startsWith('blob:')) URL.revokeObjectURL(source.sourceUrl);
+    source.sourceUrl = null;
+    source.image = null;
+    source.fileName = '';
+    source.baseScale = 1;
+    source.transform = { x: state.resolution / 2, y: state.resolution / 2, scale: 1 };
+    if (state.mode === 'pp') {
+      state.pp.detectedPixelSize = null;
+      state.pp.detectionConfidence = null;
+      state.pp.logicalWidth = null;
+      state.pp.logicalHeight = null;
+    }
   }
 
   state.output = null;
@@ -1140,23 +1261,30 @@ function clearActiveSource() {
 }
 
 function loadImageSource(source, fileName, revokeSource = false, settings = null) {
-  if (state.sourceUrl?.startsWith('blob:')) URL.revokeObjectURL(state.sourceUrl);
-  state.sourceUrl = revokeSource ? source : null;
+  const imageState = activeImageState();
+  if (imageState.sourceUrl?.startsWith('blob:')) URL.revokeObjectURL(imageState.sourceUrl);
+  imageState.sourceUrl = revokeSource ? source : null;
   const image = new Image();
   image.onload = () => {
     if (settings) {
       Object.assign(state.pipeline, settings.pipeline || {});
       Object.assign(state.sourceEffects, settings.sourceEffects || {});
     }
-    state.image = image;
-    state.fileName = fileName || 'pasted-image.png';
-    state.baseScale = calculateBaseScale();
-    state.transform = { x: state.resolution / 2, y: state.resolution / 2, scale: 1 };
+    imageState.image = image;
+    imageState.fileName = fileName || 'pasted-image.png';
+    imageState.baseScale = calculateBaseScale();
+    imageState.transform = { x: state.resolution / 2, y: state.resolution / 2, scale: 1 };
+    if (state.mode === 'pp') {
+      state.pp.detectedPixelSize = null;
+      state.pp.detectionConfidence = null;
+      state.pp.logicalWidth = null;
+      state.pp.logicalHeight = null;
+    }
     state.output = null;
     state.usedColors = null;
     state.lastElapsedMs = null;
     state.lastTrace = null;
-    els.sourceFileLabel.textContent = `${state.fileName} · ${image.naturalWidth} × ${image.naturalHeight}`;
+    els.sourceFileLabel.textContent = `${imageState.fileName} · ${image.naturalWidth} × ${image.naturalHeight}`;
     els.generateButton.disabled = false;
     els.exportButton.disabled = true;
     updatePipelineUI();
@@ -1170,6 +1298,10 @@ function loadImageSource(source, fileName, revokeSource = false, settings = null
 }
 
 function loadRandomSample() {
+  if (state.mode === 'pp') {
+    loadImageSource(perfectPixelSample.source, perfectPixelSample.name, false);
+    return;
+  }
   let index = Math.floor(Math.random() * sampleAssets.length);
   if (sampleAssets.length > 1 && index === lastSampleIndex) index = (index + 1) % sampleAssets.length;
   lastSampleIndex = index;
@@ -1198,7 +1330,7 @@ function handleDrop(event) {
 }
 
 function handlePaste(event) {
-  if (state.mode !== '2d') return;
+  if (state.mode === '3d') return;
   const item = [...(event.clipboardData?.items || [])].find((entry) => entry.type.startsWith('image/'));
   if (!item) return;
   const file = item.getAsFile();
@@ -1278,6 +1410,7 @@ els.fileInput.addEventListener('change', (event) => {
   event.target.value = '';
 });
 els.mode2d.addEventListener('click', () => switchMode('2d'));
+els.modePP.addEventListener('click', () => switchMode('pp'));
 els.mode3d.addEventListener('click', () => switchMode('3d'));
 els.clearSourceButton.addEventListener('click', clearActiveSource);
 els.exportButton.addEventListener('click', exportPng);
@@ -1289,6 +1422,9 @@ els.generateButton.addEventListener('click', generate);
 els.paletteRange.addEventListener('input', (event) => updateRange('palette', event.target.value));
 els.contrastRange.addEventListener('input', (event) => updateRange('contrast', event.target.value));
 els.edgesRange.addEventListener('input', (event) => updateRange('edges', event.target.value));
+els.ppAuto.addEventListener('change', () => { if (els.ppAuto.checked) updatePPSettings('pixelSizeMode', 'auto'); });
+els.ppManual.addEventListener('change', () => { if (els.ppManual.checked) updatePPSettings('pixelSizeMode', 'manual'); });
+els.ppPixelSize.addEventListener('input', (event) => updatePPSettings('pixelSize', event.target.value));
 els.advancedAlphaToggle.addEventListener('change', (event) => updateAdvancedSetting('alphaCutoffEnabled', event.target.checked));
 els.advancedAlphaPercent.addEventListener('input', (event) => updateAdvancedSetting('alphaCutoffPercent', event.target.value));
 els.advancedBackgroundToggle.addEventListener('change', (event) => updateSourceEffect('removeBackground', event.target.checked));

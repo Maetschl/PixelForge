@@ -8,7 +8,7 @@
   "scripts": {
     "dev": "python3 -m http.server 4173 --directory dist",
     "mcp": "node mcp/server.mjs",
-    "test:web": "node --check dist/app.js && node tests/pipeline.test.mjs && node tests/model-mode.test.mjs && node tests/site.test.mjs",
+    "test:web": "node --check dist/app.js && node tests/pipeline.test.mjs && node tests/pp.test.mjs && node tests/model-mode.test.mjs && node tests/site.test.mjs",
     "test:mcp": "node tests/mcp.test.mjs",
     "test": "npm run test:web && npm run test:mcp"
   },

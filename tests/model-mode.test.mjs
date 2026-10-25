@@ -10,6 +10,7 @@ const fixture = fs.readFileSync(path.join(root, 'tests/fixtures/test-cube.obj'),
 assert.match(html, /<script type="importmap">/);
 assert.match(html, /"three": "\.\/vendor\/three\/build\/three\.module\.js"/);
 assert.match(html, /id="mode-2d"/);
+assert.match(html, /id="mode-pp"/);
 assert.match(html, /id="mode-3d"/);
 assert.match(html, /accept="image\/\*,\.glb,\.gltf,\.obj,\.fbx,\.mtl"/);
 assert.match(html, /id="source-3d-canvas"/);

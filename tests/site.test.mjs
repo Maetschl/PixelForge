@@ -11,6 +11,7 @@ for (const file of [
   'dist/index.html', 'dist/styles.css', 'dist/app.js', 'dist/image-pipeline.js',
   'dist/pipeline-core.mjs', 'dist/pipeline-worker.js', 'dist/favicon.svg', 'dist/assets/pixel-forge-sample.svg',
   'dist/assets/examples/pixelart-crystal-skull.png', 'dist/assets/examples/pixelart-harbor-village.png', 'dist/assets/examples/pixelart-volcano-forge.png',
+  'dist/assets/examples/pixelperfect-ranger-source.png', 'dist/assets/examples/pixelperfect-ranger-reference.png',
   'dist/vendor/three/build/three.module.js', 'dist/vendor/three/examples/jsm/loaders/FBXLoader.js',
   '.github/workflows/pages.yml', 'README.md', 'AGENTS.md', 'LICENSE', 'THIRD_PARTY_NOTICES.md', 'package.json',
   'mcp/server.mjs', 'mcp/image-io.mjs', 'mcp/pixelforge.example.json',
@@ -33,6 +34,8 @@ assert.match(html, /data-i18n="assetPrompt"/);
 assert.match(html, /id="clear-source-button"/);
 assert.match(html, /data-i18n="clean"/);
 assert.match(html, /id="advanced-toggle"[^>]*aria-pressed="false"/);
+assert.match(html, /id="mode-pp"[^>]*aria-pressed="false"/);
+assert.match(html, /id="pp-settings"[^>]*hidden/);
 assert.match(html, /id="advanced-pipeline"[^>]*hidden/);
 assert.match(html, /data-stage-id="alpha-cutoff"/);
 assert.match(html, /data-stage-id="background-removal"/);
@@ -56,6 +59,10 @@ assert.match(app, /function loadRandomSample\(\)/);
 assert.match(app, /els\.sampleButton\.addEventListener\('click', loadRandomSample\)/);
 assert.doesNotMatch(app, /renderAll\(\);\s*loadRandomSample\(\);/);
 assert.match(app, /function clearActiveSource\(\)/);
+assert.match(app, /state\.mode === 'pp'/);
+assert.match(app, /processPerfectPixel/);
+assert.match(app, /pixelperfect-ranger-source\.png/);
+assert.match(app, /pixelSizeMode/);
 assert.match(app, /function toggleAdvancedPipeline\(\)/);
 assert.match(app, /state\.pipeline\.advanced/);
 assert.match(app, /trace: state\.pipeline\.advanced\.enabled/);
