@@ -198,7 +198,10 @@
           <div class="pipeline-heading">
             <div>
               <p class="section-kicker" data-i18n="pipelineKicker">03 / processing pipeline</p>
-              <h2 id="pipeline-title" data-i18n="tuneForge">Tune the forge</h2>
+              <div class="pipeline-title-line">
+                <h2 id="pipeline-title" data-i18n="tuneForge">Tune the forge</h2>
+                <button class="button button-ghost button-small advanced-toggle" id="advanced-toggle" type="button" aria-pressed="false" aria-label="Open advanced pipeline" data-i18n-aria-label="advancedModeAria"><span id="advanced-mode-label" data-i18n="advanced">Advanced</span></button>
+              </div>
             </div>
             <div class="pipeline-actions">
               <label class="live-toggle">
@@ -209,6 +212,46 @@
               <button class="button button-primary" id="generate-button" type="button" disabled><span aria-hidden="true">✦</span> <span data-i18n="generate">Generate</span></button>
             </div>
           </div>
+          <section class="advanced-pipeline" id="advanced-pipeline" hidden aria-labelledby="advanced-pipeline-title">
+            <div class="advanced-pipeline-heading">
+              <div>
+                <p class="section-kicker section-kicker-accent" data-i18n="advancedPipeline">Advanced pipeline</p>
+                <h3 id="advanced-pipeline-title" data-i18n="advancedPipelineTitle">Inspect each stage</h3>
+              </div>
+              <span class="advanced-trace-status" id="advanced-trace-status" data-i18n="traceWaiting">Waiting for a generation</span>
+            </div>
+            <div class="advanced-stage-list">
+              <article class="advanced-stage" data-stage-id="alpha-cutoff">
+                <div class="advanced-stage-copy"><div class="advanced-stage-title"><span class="stage-index">01</span><strong data-i18n="stageAlphaCutoff">Alpha cutoff</strong><span class="stage-status" id="stage-status-alpha-cutoff"></span></div><p data-i18n="stageAlphaCutoffHelp">Remove pixels at or below the transparency threshold.</p></div>
+                <div class="advanced-stage-controls"><label class="advanced-toggle-control"><input id="advanced-alpha-toggle" type="checkbox" checked /><span class="toggle-track"><span></span></span><span data-i18n="enabled">Enabled</span></label><label class="advanced-inline-range"><span data-i18n="cutoffPercent">Cutoff</span><output id="advanced-alpha-value">20%</output><input id="advanced-alpha-percent" type="range" min="0" max="100" step="1" value="20" /></label></div>
+              </article>
+              <article class="advanced-stage" data-stage-id="background-removal">
+                <div class="advanced-stage-copy"><div class="advanced-stage-title"><span class="stage-index">02</span><strong data-i18n="stageBackground">Background removal</strong><span class="stage-status" id="stage-status-background-removal"></span></div><p data-i18n="stageBackgroundHelp">Flood fill connected background colors from the image edges.</p></div>
+                <div class="advanced-stage-controls"><label class="advanced-toggle-control"><input id="advanced-background-toggle" type="checkbox" /><span class="toggle-track"><span></span></span><span data-i18n="enabled">Enabled</span></label><label class="advanced-inline-range"><span data-i18n="backgroundTolerance">Tolerance</span><output id="advanced-background-value">8%</output><input id="advanced-background-tolerance" type="range" min="1" max="50" step="1" value="8" /></label></div>
+              </article>
+              <div class="advanced-divider" role="separator"><span data-i18n="mainPipeline">Main pipeline</span></div>
+              <article class="advanced-stage" data-stage-id="indexed-palette">
+                <div class="advanced-stage-copy"><div class="advanced-stage-title"><span class="stage-index">03</span><strong data-i18n="stagePalette">Indexed palette</strong><span class="stage-status" id="stage-status-indexed-palette"></span></div><p data-i18n="stagePaletteHelp">Reduce colors perceptually and preserve chromatic accents.</p></div>
+                <label class="advanced-toggle-control"><input id="advanced-palette-toggle" type="checkbox" checked /><span class="toggle-track"><span></span></span><span data-i18n="enabled">Enabled</span></label>
+              </article>
+              <article class="advanced-stage" data-stage-id="contrast">
+                <div class="advanced-stage-copy"><div class="advanced-stage-title"><span class="stage-index">04</span><strong data-i18n="stageContrast">Contrast</strong><span class="stage-status" id="stage-status-contrast"></span></div><p data-i18n="stageContrastHelp">Apply the luminance curve using the current contrast value.</p></div>
+                <label class="advanced-toggle-control"><input id="advanced-contrast-toggle" type="checkbox" checked /><span class="toggle-track"><span></span></span><span data-i18n="enabled">Enabled</span></label>
+              </article>
+              <article class="advanced-stage" data-stage-id="edges">
+                <div class="advanced-stage-copy"><div class="advanced-stage-title"><span class="stage-index">05</span><strong data-i18n="stageEdges">Sobel edges</strong><span class="stage-status" id="stage-status-edges"></span></div><p data-i18n="stageEdgesHelp">Detect and reinforce luminance edges before cell sampling.</p></div>
+                <label class="advanced-toggle-control"><input id="advanced-edges-toggle" type="checkbox" checked /><span class="toggle-track"><span></span></span><span data-i18n="enabled">Enabled</span></label>
+              </article>
+              <article class="advanced-stage" data-stage-id="cell-sampling">
+                <div class="advanced-stage-copy"><div class="advanced-stage-title"><span class="stage-index">06</span><strong data-i18n="stageSampling">Cell sampling</strong><span class="stage-status" id="stage-status-cell-sampling"></span></div><p data-i18n="stageSamplingHelp">Choose the dominant color for each output cell and reject sparse coverage.</p></div>
+                <div class="advanced-stage-controls"><label class="advanced-toggle-control"><input id="advanced-sampling-toggle" type="checkbox" checked /><span class="toggle-track"><span></span></span><span data-i18n="enabled">Enabled</span></label><label class="advanced-inline-range"><span data-i18n="coverageThreshold">Coverage</span><output id="advanced-coverage-value">18%</output><input id="advanced-coverage-threshold" type="range" min="0" max="100" step="1" value="18" /></label></div>
+              </article>
+              <article class="advanced-stage" data-stage-id="final-border">
+                <div class="advanced-stage-copy"><div class="advanced-stage-title"><span class="stage-index">07</span><strong data-i18n="stageBorder">Final border</strong><span class="stage-status" id="stage-status-final-border"></span></div><p data-i18n="stageBorderHelp">Draw the configured border after pixelart cell sampling.</p></div>
+                <div class="advanced-stage-controls"><label class="advanced-toggle-control"><input id="advanced-border-toggle" type="checkbox" /><span class="toggle-track"><span></span></span><span data-i18n="enabled">Enabled</span></label><label class="advanced-inline-range"><span data-i18n="borderWidth">Width</span><output id="advanced-border-width-value">2 px</output><input id="advanced-border-width" type="range" min="1" max="8" step="1" value="2" /></label><label class="advanced-color-control"><span data-i18n="borderColor">Color</span><input id="advanced-border-color" type="color" value="#131313" aria-label="Border color" data-i18n-aria-label="borderColor" /></label></div>
+              </article>
+            </div>
+          </section>
           <div class="pipeline-review">
             <div class="pipeline-control-column">
           <div class="pipeline-controls">
@@ -265,6 +308,6 @@
       </footer>
     </div>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <script type="module" src="./app.js?v=final-border-20261025-2"></script>
+    <script type="module" src="./app.js?v=advanced-pipeline-20261025-1"></script>
   </body>
 </html>

@@ -47,6 +47,36 @@ const coveredCellOutput = new Uint8ClampedArray(processImageData(coveredCell, 4,
 assert.equal(coveredCellOutput[3], 255, 'a sufficiently covered cell must remain visible');
 assert.deepEqual([...coveredCellOutput.slice(0, 3)], [42, 68, 94], 'cell majority must use the covered subject color');
 
+const advancedInput = pixels(16, 16, (x, y) => {
+  if (x < 8 && y < 8) return [220, 60, 40, 255];
+  if (x >= 8 && y >= 8) return [35, 120, 220, 255];
+  return [245, 245, 245, 255];
+});
+const defaultConfig = { resolution: 8, maxColors: 4, contrast: 35, edgeStrength: 45, borderEnabled: false };
+const explicitDefaultConfig = { ...defaultConfig, alphaCutoffEnabled: true, alphaCutoffPercent: 20, paletteEnabled: true, contrastEnabled: true, edgeEnabled: true, cellMajorityEnabled: true, cellCoverageThreshold: 0.18 };
+assert.deepEqual([...new Uint8ClampedArray(processImageData(advancedInput, 16, 16, defaultConfig).pixels)], [...new Uint8ClampedArray(processImageData(advancedInput, 16, 16, explicitDefaultConfig).pixels)], 'advanced defaults must preserve the current pipeline output');
+
+const alphaDisabled = new Uint8ClampedArray(processImageData(alphaCutoffInput, 3, 1, { resolution: 3, maxColors: 2, contrast: 0, edgeStrength: 0, alphaCutoffEnabled: false }).pixels);
+assert.equal(alphaDisabled[3], 255, 'disabling alpha cutoff must preserve a low-alpha source sample');
+
+const paletteDisabled = processImageData(pixels(32, 32, (x, y) => [x * 8, y * 8, (x + y) * 4, 255]), 32, 32, { resolution: 16, maxColors: 4, contrast: 0, edgeStrength: 0, paletteEnabled: false });
+assert.ok(resultColors(paletteDisabled).colors.size <= 4, 'disabling initial palette quantization must preserve the final color limit');
+
+const contrastBase = processImageData(pixels(8, 8, () => [80, 120, 160, 255]), 8, 8, { resolution: 4, maxColors: 4, contrast: 0, edgeStrength: 0 });
+const contrastDisabled = processImageData(pixels(8, 8, () => [80, 120, 160, 255]), 8, 8, { resolution: 4, maxColors: 4, contrast: 100, edgeStrength: 0, contrastEnabled: false });
+assert.deepEqual([...new Uint8ClampedArray(contrastDisabled.pixels)], [...new Uint8ClampedArray(contrastBase.pixels)], 'disabled contrast must ignore the slider value');
+
+const edgeBase = processImageData(advancedInput, 16, 16, { resolution: 8, maxColors: 4, contrast: 0, edgeStrength: 0 });
+const edgeDisabled = processImageData(advancedInput, 16, 16, { resolution: 8, maxColors: 4, contrast: 0, edgeStrength: 100, edgeEnabled: false });
+assert.deepEqual([...new Uint8ClampedArray(edgeDisabled.pixels)], [...new Uint8ClampedArray(edgeBase.pixels)], 'disabled Sobel edges must ignore edge strength');
+
+const centerSampleInput = pixels(4, 4, (x, y) => x === 1 && y === 1 ? [20, 40, 220, 255] : [220, 40, 20, 255]);
+const centerSample = new Uint8ClampedArray(processImageData(centerSampleInput, 4, 4, { resolution: 2, maxColors: 4, contrast: 0, edgeStrength: 0, cellMajorityEnabled: false }).pixels);
+assert.deepEqual([...centerSample.slice((0 * 2 + 0) * 4, (0 * 2 + 0) * 4 + 3)], [20, 40, 220], 'disabled cell majority must use the deterministic center sample');
+
+const traceResult = processImageData(advancedInput, 16, 16, { ...defaultConfig, trace: true });
+assert.deepEqual(traceResult.trace.map((stage) => stage.id), ['alpha-cutoff', 'background-removal', 'indexed-palette', 'contrast', 'edges', 'cell-sampling', 'final-border'], 'trace must report pipeline stages in order');
+
 const gradient = processImageData(pixels(32, 32, (x, y) => [x * 8, y * 8, (x + y) * 4, 255]), 32, 32, { resolution: 16, maxColors: 4, contrast: 35, edgeStrength: 50 });
 assert.ok(resultColors(gradient).colors.size <= 4, 'output must not exceed the palette limit');
 

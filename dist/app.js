@@ -146,6 +146,16 @@ const cleanLabels = {
 };
 Object.entries(cleanLabels).forEach(([code, labels]) => Object.assign(locales[code], labels));
 
+const advancedLabels = {
+  en: { advanced: 'Advanced', basic: 'Basic', advancedModeAria: 'Open advanced pipeline', basicModeAria: 'Return to basic pipeline', advancedPipeline: 'Advanced pipeline', advancedPipelineTitle: 'Inspect each stage', traceWaiting: 'Waiting for a generation', traceReady: 'Trace updated', enabled: 'Enabled', active: 'Active', skipped: 'Skipped', cutoffPercent: 'Cutoff', backgroundTolerance: 'Tolerance', coverageThreshold: 'Coverage', mainPipeline: 'Main pipeline', stageAlphaCutoff: 'Alpha cutoff', stageAlphaCutoffHelp: 'Remove pixels at or below the transparency threshold.', stageBackground: 'Background removal', stageBackgroundHelp: 'Flood fill connected background colors from the image edges.', stagePalette: 'Indexed palette', stagePaletteHelp: 'Reduce colors perceptually and preserve chromatic accents.', stageContrast: 'Contrast', stageContrastHelp: 'Apply the luminance curve using the current contrast value.', stageEdges: 'Sobel edges', stageEdgesHelp: 'Detect and reinforce luminance edges before cell sampling.', stageSampling: 'Cell sampling', stageSamplingHelp: 'Choose the dominant color for each output cell and reject sparse coverage.', stageBorder: 'Final border', stageBorderHelp: 'Draw the configured border after pixelart cell sampling.' },
+  es: { advanced: 'Avanzado', basic: 'Básico', advancedModeAria: 'Abrir pipeline avanzado', basicModeAria: 'Volver al pipeline básico', advancedPipeline: 'Pipeline avanzado', advancedPipelineTitle: 'Inspecciona cada etapa', traceWaiting: 'Esperando una generación', traceReady: 'Traza actualizada', enabled: 'Activo', active: 'Activo', skipped: 'Omitido', cutoffPercent: 'Corte', backgroundTolerance: 'Tolerancia', coverageThreshold: 'Cobertura', mainPipeline: 'Pipeline principal', stageAlphaCutoff: 'Corte de alpha', stageAlphaCutoffHelp: 'Elimina píxeles que están en el umbral de transparencia o por debajo.', stageBackground: 'Eliminación de fondo', stageBackgroundHelp: 'Rellena colores de fondo conectados desde los bordes.', stagePalette: 'Paleta indexada', stagePaletteHelp: 'Reduce los colores perceptualmente y conserva los acentos cromáticos.', stageContrast: 'Contraste', stageContrastHelp: 'Aplica la curva de luminancia usando el contraste actual.', stageEdges: 'Bordes Sobel', stageEdgesHelp: 'Detecta y refuerza los bordes antes de muestrear las celdas.', stageSampling: 'Muestreo por celda', stageSamplingHelp: 'Elige el color dominante de cada celda y rechaza coberturas escasas.', stageBorder: 'Borde final', stageBorderHelp: 'Dibuja el borde configurado después del muestreo pixelart.' },
+  ja: { advanced: '詳細', basic: '基本', advancedModeAria: '詳細パイプラインを開く', basicModeAria: '基本パイプラインに戻る', advancedPipeline: '詳細パイプライン', advancedPipelineTitle: '各段階を確認', traceWaiting: '生成を待っています', traceReady: 'トレースを更新しました', enabled: '有効', active: '有効', skipped: 'スキップ', cutoffPercent: 'カットオフ', backgroundTolerance: '許容値', coverageThreshold: 'カバレッジ', mainPipeline: 'メインパイプライン', stageAlphaCutoff: 'アルファカットオフ', stageAlphaCutoffHelp: '透明度のしきい値以下のピクセルを削除します。', stageBackground: '背景削除', stageBackgroundHelp: '画像の端から接続した背景色を塗りつぶします。', stagePalette: 'インデックスパレット', stagePaletteHelp: '知覚的に色を減らし、色のアクセントを保持します。', stageContrast: 'コントラスト', stageContrastHelp: '現在のコントラスト値で輝度カーブを適用します。', stageEdges: 'Sobelエッジ', stageEdgesHelp: 'セルサンプリング前に輝度エッジを検出して強調します。', stageSampling: 'セルサンプリング', stageSamplingHelp: '各出力セルの代表色を選び、疎なカバレッジを除外します。', stageBorder: '最終ボーダー', stageBorderHelp: 'ピクセルアートのセルサンプリング後にボーダーを描画します。' },
+  zh: { advanced: '高级', basic: '基础', advancedModeAria: '打开高级管线', basicModeAria: '返回基础管线', advancedPipeline: '高级管线', advancedPipelineTitle: '查看每个阶段', traceWaiting: '等待生成', traceReady: '跟踪已更新', enabled: '启用', active: '启用', skipped: '跳过', cutoffPercent: '截止值', backgroundTolerance: '容差', coverageThreshold: '覆盖率', mainPipeline: '主管线', stageAlphaCutoff: 'Alpha 截止', stageAlphaCutoffHelp: '移除透明度低于或等于阈值的像素。', stageBackground: '移除背景', stageBackgroundHelp: '从图片边缘泛洪填充连接的背景颜色。', stagePalette: '索引调色板', stagePaletteHelp: '以感知方式减少颜色并保留强调色。', stageContrast: '对比度', stageContrastHelp: '使用当前对比度值应用亮度曲线。', stageEdges: 'Sobel 边缘', stageEdgesHelp: '在单元格采样前检测并强化亮度边缘。', stageSampling: '单元格采样', stageSamplingHelp: '为每个输出单元格选择主色并拒绝稀疏覆盖。', stageBorder: '最终边框', stageBorderHelp: '在像素画单元格采样后绘制边框。' },
+  pt: { advanced: 'Avançado', basic: 'Básico', advancedModeAria: 'Abrir pipeline avançado', basicModeAria: 'Voltar ao pipeline básico', advancedPipeline: 'Pipeline avançado', advancedPipelineTitle: 'Inspecione cada etapa', traceWaiting: 'Aguardando uma geração', traceReady: 'Rastreamento atualizado', enabled: 'Ativo', active: 'Ativo', skipped: 'Ignorado', cutoffPercent: 'Corte', backgroundTolerance: 'Tolerância', coverageThreshold: 'Cobertura', mainPipeline: 'Pipeline principal', stageAlphaCutoff: 'Corte de alpha', stageAlphaCutoffHelp: 'Remove pixels no limite de transparência ou abaixo dele.', stageBackground: 'Remoção de fundo', stageBackgroundHelp: 'Preenche cores de fundo conectadas a partir das bordas.', stagePalette: 'Paleta indexada', stagePaletteHelp: 'Reduz as cores perceptualmente e preserva acentos cromáticos.', stageContrast: 'Contraste', stageContrastHelp: 'Aplica a curva de luminância usando o contraste atual.', stageEdges: 'Bordas Sobel', stageEdgesHelp: 'Detecta e reforça bordas de luminância antes da amostragem.', stageSampling: 'Amostragem por célula', stageSamplingHelp: 'Escolhe a cor dominante de cada célula e rejeita cobertura esparsa.', stageBorder: 'Borda final', stageBorderHelp: 'Desenha a borda configurada após a amostragem pixelart.' },
+  ru: { advanced: 'Расширенный', basic: 'Базовый', advancedModeAria: 'Открыть расширенный конвейер', basicModeAria: 'Вернуться к базовому конвейеру', advancedPipeline: 'Расширенный конвейер', advancedPipelineTitle: 'Проверка каждого этапа', traceWaiting: 'Ожидание генерации', traceReady: 'Трассировка обновлена', enabled: 'Включено', active: 'Активно', skipped: 'Пропущено', cutoffPercent: 'Отсечение', backgroundTolerance: 'Допуск', coverageThreshold: 'Покрытие', mainPipeline: 'Основной конвейер', stageAlphaCutoff: 'Отсечение alpha', stageAlphaCutoffHelp: 'Удаляет пиксели на уровне прозрачности или ниже него.', stageBackground: 'Удаление фона', stageBackgroundHelp: 'Заливает связанные цвета фона от краёв изображения.', stagePalette: 'Индексированная палитра', stagePaletteHelp: 'Перцептивно уменьшает цвета и сохраняет цветовые акценты.', stageContrast: 'Контраст', stageContrastHelp: 'Применяет кривую яркости с текущим значением контраста.', stageEdges: 'Границы Sobel', stageEdgesHelp: 'Обнаруживает и усиливает границы яркости перед выборкой ячеек.', stageSampling: 'Выборка ячеек', stageSamplingHelp: 'Выбирает основной цвет каждой ячейки и отбрасывает редкое покрытие.', stageBorder: 'Финальная рамка', stageBorderHelp: 'Рисует заданную рамку после выборки пиксель-арт ячеек.' },
+};
+Object.entries(advancedLabels).forEach(([code, labels]) => Object.assign(locales[code], labels));
+
 const localeStorageKey = 'pixel-forge.locale';
 let currentLocale = 'en';
 
@@ -164,15 +174,31 @@ const state = {
   baseScale: 1,
   transform: { x: 64, y: 64, scale: 1 },
   viewZoom: { source: 1, result: 1 },
-  pipeline: { palette: 48, contrast: 0, edges: 0, live: true },
+  pipeline: {
+    palette: 48,
+    contrast: 0,
+    edges: 0,
+    live: true,
+    advanced: {
+      enabled: false,
+      alphaCutoffEnabled: true,
+      alphaCutoffPercent: 20,
+      paletteEnabled: true,
+      contrastEnabled: true,
+      edgeEnabled: true,
+      cellMajorityEnabled: true,
+      cellCoverageThreshold: 0.18,
+    },
+  },
   sourceEffects: { removeBackground: false, backgroundTolerance: 0.08, borderEnabled: false, borderWidth: 2, borderColor: '#131313' },
   locale: 'en',
   output: null,
   usedColors: null,
   lastElapsedMs: null,
+  lastTrace: null,
   busy: false,
   requestId: 0,
-  outputs: { '2d': { output: null, usedColors: null, lastElapsedMs: null }, '3d': { output: null, usedColors: null, lastElapsedMs: null } },
+  outputs: { '2d': { output: null, usedColors: null, lastElapsedMs: null, trace: null }, '3d': { output: null, usedColors: null, lastElapsedMs: null, trace: null } },
   model: { root: null, name: '', files: [] },
   three: { renderer: null, scene: null, camera: null, controls: null, modelRoot: null, objectUrls: [], initialized: false, error: false, initialCamera: null },
 };
@@ -215,6 +241,26 @@ const els = {
   moveScaleHint: document.querySelector('#source-panel .footer-hint'),
   resultStatus: document.querySelector('#result-status'),
   generateButton: document.querySelector('#generate-button'),
+  advancedToggle: document.querySelector('#advanced-toggle'),
+  advancedModeLabel: document.querySelector('#advanced-mode-label'),
+  advancedPipeline: document.querySelector('#advanced-pipeline'),
+  advancedTraceStatus: document.querySelector('#advanced-trace-status'),
+  advancedAlphaToggle: document.querySelector('#advanced-alpha-toggle'),
+  advancedAlphaPercent: document.querySelector('#advanced-alpha-percent'),
+  advancedAlphaValue: document.querySelector('#advanced-alpha-value'),
+  advancedBackgroundToggle: document.querySelector('#advanced-background-toggle'),
+  advancedBackgroundTolerance: document.querySelector('#advanced-background-tolerance'),
+  advancedBackgroundValue: document.querySelector('#advanced-background-value'),
+  advancedPaletteToggle: document.querySelector('#advanced-palette-toggle'),
+  advancedContrastToggle: document.querySelector('#advanced-contrast-toggle'),
+  advancedEdgesToggle: document.querySelector('#advanced-edges-toggle'),
+  advancedSamplingToggle: document.querySelector('#advanced-sampling-toggle'),
+  advancedCoverageThreshold: document.querySelector('#advanced-coverage-threshold'),
+  advancedCoverageValue: document.querySelector('#advanced-coverage-value'),
+  advancedBorderToggle: document.querySelector('#advanced-border-toggle'),
+  advancedBorderWidth: document.querySelector('#advanced-border-width'),
+  advancedBorderWidthValue: document.querySelector('#advanced-border-width-value'),
+  advancedBorderColor: document.querySelector('#advanced-border-color'),
   liveToggle: document.querySelector('#live-toggle'),
   paletteRange: document.querySelector('#palette-range'),
   contrastRange: document.querySelector('#contrast-range'),
@@ -250,7 +296,7 @@ let sourceEffectTimer = null;
 let modelLoadToken = 0;
 
 try {
-  worker = new Worker('./pipeline-worker.js?v=final-border-20261025-2', { type: 'module' });
+  worker = new Worker('./pipeline-worker.js?v=advanced-pipeline-20261025-1', { type: 'module' });
   workerReady = true;
   worker.addEventListener('message', handleWorkerMessage);
   worker.addEventListener('error', () => {
@@ -335,7 +381,7 @@ function hasActiveSource() {
 }
 
 function saveActiveOutput() {
-  state.outputs[state.mode] = { output: state.output, usedColors: state.usedColors, lastElapsedMs: state.lastElapsedMs };
+  state.outputs[state.mode] = { output: state.output, usedColors: state.usedColors, lastElapsedMs: state.lastElapsedMs, trace: state.lastTrace };
 }
 
 function restoreModeOutput() {
@@ -343,6 +389,7 @@ function restoreModeOutput() {
   state.output = saved.output || null;
   state.usedColors = saved.usedColors ?? null;
   state.lastElapsedMs = saved.lastElapsedMs ?? null;
+  state.lastTrace = saved.trace || null;
 }
 
 function updateModeUI() {
@@ -526,7 +573,8 @@ function installThreeModel(root, name, objectUrls, neutralMaterial = false) {
   state.output = null;
   state.usedColors = null;
   state.lastElapsedMs = null;
-  state.outputs['3d'] = { output: null, usedColors: null, lastElapsedMs: null };
+  state.lastTrace = null;
+  state.outputs['3d'] = { output: null, usedColors: null, lastElapsedMs: null, trace: null };
   updateModeUI();
   updateCanvasViews();
   setStatus(t('modelReady'), 'ready');
@@ -589,6 +637,13 @@ function switchMode(mode) {
   renderAll();
 }
 
+function toggleAdvancedPipeline() {
+  state.pipeline.advanced.enabled = !state.pipeline.advanced.enabled;
+  state.lastTrace = null;
+  updatePipelineUI();
+  if (state.pipeline.advanced.enabled && hasActiveSource() && state.pipeline.live) scheduleGenerate(80);
+}
+
 function updateResolutionUI() {
   const value = state.resolution;
   els.resolutionInput.value = value;
@@ -599,6 +654,58 @@ function updateResolutionUI() {
   document.querySelectorAll('.preset-button').forEach((button) => button.classList.toggle('is-active', Number(button.dataset.resolution) === value));
 }
 
+function updateAdvancedUI() {
+  const advanced = state.pipeline.advanced;
+  const stageEntries = new Map((state.lastTrace || []).map((stage) => [stage.id, stage]));
+  els.advancedPipeline.hidden = !advanced.enabled;
+  els.advancedToggle.setAttribute('aria-pressed', String(advanced.enabled));
+  els.advancedModeLabel.dataset.i18n = advanced.enabled ? 'basic' : 'advanced';
+  els.advancedModeLabel.textContent = t(advanced.enabled ? 'basic' : 'advanced');
+  els.advancedToggle.setAttribute('aria-label', t(advanced.enabled ? 'basicModeAria' : 'advancedModeAria'));
+  els.advancedAlphaToggle.checked = advanced.alphaCutoffEnabled;
+  els.advancedAlphaPercent.value = advanced.alphaCutoffPercent;
+  els.advancedAlphaValue.textContent = `${advanced.alphaCutoffPercent}%`;
+  els.advancedAlphaPercent.disabled = !advanced.alphaCutoffEnabled;
+  els.advancedBackgroundToggle.checked = state.sourceEffects.removeBackground;
+  const tolerancePercent = Math.round(state.sourceEffects.backgroundTolerance * 100);
+  els.advancedBackgroundTolerance.value = tolerancePercent;
+  els.advancedBackgroundValue.textContent = `${tolerancePercent}%`;
+  els.advancedBackgroundTolerance.disabled = !state.sourceEffects.removeBackground;
+  els.advancedPaletteToggle.checked = advanced.paletteEnabled;
+  els.advancedContrastToggle.checked = advanced.contrastEnabled;
+  els.advancedEdgesToggle.checked = advanced.edgeEnabled;
+  els.advancedSamplingToggle.checked = advanced.cellMajorityEnabled;
+  const coveragePercent = Math.round(advanced.cellCoverageThreshold * 100);
+  els.advancedCoverageThreshold.value = coveragePercent;
+  els.advancedCoverageValue.textContent = `${coveragePercent}%`;
+  els.advancedCoverageThreshold.disabled = !advanced.cellMajorityEnabled;
+  els.advancedBorderToggle.checked = state.sourceEffects.borderEnabled;
+  els.advancedBorderWidth.value = state.sourceEffects.borderWidth;
+  els.advancedBorderWidthValue.textContent = `${state.sourceEffects.borderWidth} px`;
+  els.advancedBorderWidth.disabled = !state.sourceEffects.borderEnabled;
+  els.advancedBorderColor.value = state.sourceEffects.borderColor;
+  els.advancedBorderColor.disabled = !state.sourceEffects.borderEnabled;
+
+  const statuses = {
+    'alpha-cutoff': advanced.alphaCutoffEnabled,
+    'background-removal': state.sourceEffects.removeBackground,
+    'indexed-palette': advanced.paletteEnabled,
+    contrast: advanced.contrastEnabled,
+    edges: advanced.edgeEnabled,
+    'cell-sampling': advanced.cellMajorityEnabled,
+    'final-border': state.sourceEffects.borderEnabled,
+  };
+  Object.entries(statuses).forEach(([id, enabled]) => {
+    const node = document.querySelector(`#stage-status-${id}`);
+    if (!node) return;
+    const entry = stageEntries.get(id);
+    node.textContent = `${t(enabled ? 'active' : 'skipped')}${entry ? ` · ${entry.visiblePixels} px` : ''}`;
+    node.classList.toggle('is-skipped', !enabled);
+    if (entry) node.title = `${entry.width} × ${entry.height}`;
+  });
+  els.advancedTraceStatus.textContent = state.lastTrace ? t('traceReady') : t('traceWaiting');
+}
+
 function updatePipelineUI() {
   els.paletteValue.textContent = t('colors', { value: state.pipeline.palette });
   els.contrastValue.textContent = `${state.pipeline.contrast}%`;
@@ -606,6 +713,7 @@ function updatePipelineUI() {
   els.resultColors.textContent = state.usedColors == null
     ? `— / ${t('colors', { value: state.pipeline.palette })}`
     : `${state.usedColors} / ${t('colors', { value: state.pipeline.palette })}`;
+  updateAdvancedUI();
 }
 
 function updateSourceTreatmentUI() {
@@ -618,6 +726,7 @@ function updateSourceTreatmentUI() {
   const disabled = !state.sourceEffects.borderEnabled;
   els.borderColor.disabled = disabled;
   els.borderWidth.disabled = disabled;
+  updateAdvancedUI();
 }
 
 function setupResultCanvas(canvas) {
@@ -705,6 +814,8 @@ function effectConfig() {
   return {
     removeBackground: state.sourceEffects.removeBackground,
     backgroundTolerance: state.sourceEffects.backgroundTolerance,
+    alphaCutoffEnabled: state.pipeline.advanced.alphaCutoffEnabled,
+    alphaCutoffPercent: state.pipeline.advanced.alphaCutoffPercent,
   };
 }
 
@@ -721,7 +832,6 @@ function renderTransformedPixels(size) {
     composite.drawImage(state.image, rect.x * size / state.resolution, rect.y * size / state.resolution, rect.width * size / state.resolution, rect.height * size / state.resolution);
   }
   const pixels = composite.getImageData(0, 0, size, size);
-  if (!state.sourceEffects.removeBackground) return pixels;
   const result = pipeline.applySourceEffects(pixels.data, size, size, effectConfig());
   return new ImageData(new Uint8ClampedArray(result.pixels), size, size);
 }
@@ -833,6 +943,7 @@ function resizeDocument(value) {
   state.output = null;
   state.usedColors = null;
   state.lastElapsedMs = null;
+  state.lastTrace = null;
   els.exportButton.disabled = true;
   els.resultColors.textContent = `— / ${t('colors', { value: state.pipeline.palette })}`;
   els.resultStatus.textContent = state.image ? t('regenerating') : t('waitingForImage');
@@ -910,7 +1021,6 @@ function captureThreePixels(size) {
     const sourceRow = (size - 1 - y) * size * 4;
     flipped.set(pixels.subarray(sourceRow, sourceRow + size * 4), y * size * 4);
   }
-  if (!state.sourceEffects.removeBackground) return { pixels: new ImageData(flipped, size, size), width: size, height: size };
   const effects = pipeline.applySourceEffects(flipped, size, size, effectConfig());
   return { pixels: new ImageData(new Uint8ClampedArray(effects.pixels), size, size), width: size, height: size };
 }
@@ -934,6 +1044,17 @@ function generate() {
     maxColors: state.pipeline.palette,
     contrast: state.pipeline.contrast,
     edgeStrength: state.pipeline.edges,
+    alphaCutoffEnabled: state.pipeline.advanced.alphaCutoffEnabled,
+    alphaCutoffPercent: state.pipeline.advanced.alphaCutoffPercent,
+    removeBackground: state.sourceEffects.removeBackground,
+    backgroundTolerance: state.sourceEffects.backgroundTolerance,
+    paletteEnabled: state.pipeline.advanced.paletteEnabled,
+    contrastEnabled: state.pipeline.advanced.contrastEnabled,
+    edgeEnabled: state.pipeline.advanced.edgeEnabled,
+    cellMajorityEnabled: state.pipeline.advanced.cellMajorityEnabled,
+    cellCoverageThreshold: state.pipeline.advanced.cellCoverageThreshold,
+    sourceEffectsApplied: true,
+    trace: state.pipeline.advanced.enabled,
     borderEnabled: state.sourceEffects.borderEnabled,
     borderWidth: state.sourceEffects.borderWidth,
     borderColor: state.sourceEffects.borderColor,
@@ -967,6 +1088,7 @@ function handlePipelineResult(requestId, result) {
   state.busy = false;
   state.usedColors = usedColors;
   state.lastElapsedMs = result.elapsedMs;
+  state.lastTrace = result.trace || null;
   saveActiveOutput();
   updatePipelineUI();
   els.resultStatus.textContent = t('generated', { value: result.elapsedMs });
@@ -1011,6 +1133,7 @@ function clearActiveSource() {
   state.output = null;
   state.usedColors = null;
   state.lastElapsedMs = null;
+  state.lastTrace = null;
   saveActiveOutput();
   renderAll();
   setStatus(t('readyToImport'), 'ready');
@@ -1032,6 +1155,7 @@ function loadImageSource(source, fileName, revokeSource = false, settings = null
     state.output = null;
     state.usedColors = null;
     state.lastElapsedMs = null;
+    state.lastTrace = null;
     els.sourceFileLabel.textContent = `${state.fileName} · ${image.naturalWidth} × ${image.naturalHeight}`;
     els.generateButton.disabled = false;
     els.exportButton.disabled = true;
@@ -1087,6 +1211,16 @@ function updateRange(key, value) {
   if (hasActiveSource() && state.pipeline.live) scheduleGenerate();
 }
 
+function updateAdvancedSetting(key, value) {
+  const advanced = state.pipeline.advanced;
+  if (key === 'alphaCutoffPercent') advanced.alphaCutoffPercent = clamp(Number(value) || 0, 0, 100);
+  else if (key === 'cellCoverageThreshold') advanced.cellCoverageThreshold = clamp(Number(value) || 0, 0, 100) / 100;
+  else if (key === 'alphaCutoffEnabled' || key === 'paletteEnabled' || key === 'contrastEnabled' || key === 'edgeEnabled' || key === 'cellMajorityEnabled') advanced[key] = Boolean(value);
+  updatePipelineUI();
+  if (hasActiveSource() && state.pipeline.live) scheduleGenerate(180);
+  else drawSource();
+}
+
 function updateSourceEffect(key, value) {
   if (key === 'removeBackground' || key === 'borderEnabled') state.sourceEffects[key] = Boolean(value);
   else if (key === 'borderWidth') state.sourceEffects.borderWidth = clamp(Number(value) || 2, 1, 8);
@@ -1098,6 +1232,17 @@ function updateSourceEffect(key, value) {
     drawSource();
     if (hasActiveSource() && state.pipeline.live) scheduleGenerate(180);
   }, key === 'borderColor' ? 80 : 40);
+}
+
+function updateAdvancedBackgroundTolerance(value) {
+  state.sourceEffects.backgroundTolerance = clamp(Number(value) || 8, 1, 50) / 100;
+  updateAdvancedUI();
+  clearTimeout(sourceEffectTimer);
+  sourceEffectTimer = setTimeout(() => {
+    sourceEffectTimer = null;
+    drawSource();
+    if (hasActiveSource() && state.pipeline.live) scheduleGenerate(180);
+  }, 120);
 }
 
 function updateViewZoom(key, delta) {
@@ -1139,10 +1284,26 @@ els.exportButton.addEventListener('click', exportPng);
 els.resolutionInput.addEventListener('change', (event) => resizeDocument(event.target.value));
 document.querySelectorAll('.preset-button').forEach((button) => button.addEventListener('click', () => resizeDocument(button.dataset.resolution)));
 els.liveToggle.addEventListener('change', (event) => { state.pipeline.live = event.target.checked; if (state.pipeline.live) scheduleGenerate(); });
+els.advancedToggle.addEventListener('click', toggleAdvancedPipeline);
 els.generateButton.addEventListener('click', generate);
 els.paletteRange.addEventListener('input', (event) => updateRange('palette', event.target.value));
 els.contrastRange.addEventListener('input', (event) => updateRange('contrast', event.target.value));
 els.edgesRange.addEventListener('input', (event) => updateRange('edges', event.target.value));
+els.advancedAlphaToggle.addEventListener('change', (event) => updateAdvancedSetting('alphaCutoffEnabled', event.target.checked));
+els.advancedAlphaPercent.addEventListener('input', (event) => updateAdvancedSetting('alphaCutoffPercent', event.target.value));
+els.advancedBackgroundToggle.addEventListener('change', (event) => updateSourceEffect('removeBackground', event.target.checked));
+els.advancedBackgroundTolerance.addEventListener('input', (event) => updateAdvancedBackgroundTolerance(event.target.value));
+els.advancedPaletteToggle.addEventListener('change', (event) => updateAdvancedSetting('paletteEnabled', event.target.checked));
+els.advancedContrastToggle.addEventListener('change', (event) => updateAdvancedSetting('contrastEnabled', event.target.checked));
+els.advancedEdgesToggle.addEventListener('change', (event) => updateAdvancedSetting('edgeEnabled', event.target.checked));
+els.advancedSamplingToggle.addEventListener('change', (event) => updateAdvancedSetting('cellMajorityEnabled', event.target.checked));
+els.advancedCoverageThreshold.addEventListener('input', (event) => updateAdvancedSetting('cellCoverageThreshold', event.target.value));
+els.advancedBorderToggle.addEventListener('change', (event) => updateSourceEffect('borderEnabled', event.target.checked));
+els.advancedBorderWidth.addEventListener('input', (event) => updateSourceEffect('borderWidth', event.target.value));
+els.advancedBorderColor.addEventListener('input', (event) => {
+  els.advancedBorderColor.value = event.target.value;
+  updateSourceEffect('borderColor', event.target.value);
+});
 els.removeBackgroundToggle.addEventListener('change', (event) => updateSourceEffect('removeBackground', event.target.checked));
 els.borderToggle.addEventListener('change', (event) => updateSourceEffect('borderEnabled', event.target.checked));
 els.borderColor.addEventListener('input', (event) => {

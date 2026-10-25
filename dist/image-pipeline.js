@@ -188,9 +188,12 @@ function clamp(value, min, max) { return Math.min(max, Math.max(min, value)); }
   }
 
   function applySourceEffects(input, width, height, config = {}) {
-    let output = applyAlphaCutoff(input);
+    const alphaCutoffEnabled = config.alphaCutoffEnabled !== false;
+    const alphaCutoffPercent = clamp(Number(config.alphaCutoffPercent ?? 20), 0, 100);
+    const alphaCutoff = Math.floor(alphaCutoffPercent * 255 / 100);
+    let output = alphaCutoffEnabled ? applyAlphaCutoff(input, alphaCutoff) : new Uint8ClampedArray(input);
     if (config.removeBackground) output = removeBackgroundFloodFill(output, width, height, clamp(Number(config.backgroundTolerance) || 0.08, 0.01, 0.5));
-    output = applyAlphaCutoff(output);
+    if (alphaCutoffEnabled) output = applyAlphaCutoff(output, alphaCutoff);
     return { pixels: output.buffer, width, height };
   }
 
@@ -311,22 +314,52 @@ function clamp(value, min, max) { return Math.min(max, Math.max(min, value)); }
 
   function processImageData(input, width, height, config) {
     const started = Date.now();
-    const normalizedInput = applyAlphaCutoff(input);
+    const alphaCutoffEnabled = config.alphaCutoffEnabled !== false;
+    const alphaCutoffPercent = clamp(Number(config.alphaCutoffPercent ?? 20), 0, 100);
+    const alphaCutoff = Math.floor(alphaCutoffPercent * 255 / 100);
+    const sourcePixels = config.sourceEffectsApplied
+      ? new Uint8ClampedArray(input)
+      : new Uint8ClampedArray(applySourceEffects(input, width, height, {
+        removeBackground: config.removeBackground === true,
+        backgroundTolerance: config.backgroundTolerance,
+        alphaCutoffEnabled,
+        alphaCutoffPercent,
+      }).pixels);
+    const normalizedInput = alphaCutoffEnabled ? applyAlphaCutoff(sourcePixels, alphaCutoff) : sourcePixels;
     const resolution = config.resolution;
-    const contrastFactor = 1 + config.contrast / 100;
+    const paletteEnabled = config.paletteEnabled !== false;
+    const contrastEnabled = config.contrastEnabled !== false;
+    const edgeEnabled = config.edgeEnabled !== false;
+    const cellMajorityEnabled = config.cellMajorityEnabled !== false;
+    const contrastFactor = contrastEnabled ? 1 + config.contrast / 100 : 1;
     const maxColors = clamp(config.maxColors || 48, 2, 48);
     const cellCoverageThreshold = clamp(Number(config.cellCoverageThreshold ?? 0.18), 0, 1);
     const paletteBudget = config.borderEnabled ? Math.max(1, maxColors - 1) : maxColors;
-    const palette = buildPalette(normalizedInput, paletteBudget);
+    const initialPalette = paletteEnabled ? buildPalette(normalizedInput, paletteBudget) : null;
     const pixelCount = width * height;
     const adjusted = new Uint8ClampedArray(pixelCount * 4);
     const luminance = new Float32Array(pixelCount);
     const alpha = new Uint8Array(pixelCount);
+    const trace = config.trace ? [] : null;
+    const countVisible = (pixels) => {
+      let visiblePixels = 0;
+      for (let index = 3; index < pixels.length; index += 4) if (pixels[index] >= 8) visiblePixels += 1;
+      return visiblePixels;
+    };
+    const addTrace = (id, enabled, pixels, extra = {}) => {
+      if (!trace) return;
+      trace.push({ id, enabled, width, height, visiblePixels: countVisible(pixels), ...extra });
+    };
+
+    addTrace('alpha-cutoff', alphaCutoffEnabled, normalizedInput, { threshold: alphaCutoff });
+    addTrace('background-removal', config.removeBackground === true, normalizedInput, { tolerance: Number(config.backgroundTolerance ?? 0.08) });
 
     for (let i = 0; i < pixelCount; i += 1) {
       const sourceIndex = i * 4; const a = normalizedInput[sourceIndex + 3]; alpha[i] = a;
       if (a < 8) continue;
-      const base = palette[nearestColor(normalizedInput[sourceIndex], normalizedInput[sourceIndex + 1], normalizedInput[sourceIndex + 2], palette)].rgb;
+      const base = paletteEnabled
+        ? initialPalette[nearestColor(normalizedInput[sourceIndex], normalizedInput[sourceIndex + 1], normalizedInput[sourceIndex + 2], initialPalette)].rgb
+        : [normalizedInput[sourceIndex], normalizedInput[sourceIndex + 1], normalizedInput[sourceIndex + 2]];
       const r = clamp(128 + (base[0] - 128) * contrastFactor, 0, 255);
       const g = clamp(128 + (base[1] - 128) * contrastFactor, 0, 255);
       const b = clamp(128 + (base[2] - 128) * contrastFactor, 0, 255);
@@ -334,8 +367,11 @@ function clamp(value, min, max) { return Math.min(max, Math.max(min, value)); }
       luminance[i] = r * .299 + g * .587 + b * .114;
     }
 
-    const edgeFactor = config.edgeStrength / 100;
-    const mapped = new Uint16Array(pixelCount);
+    addTrace('indexed-palette', paletteEnabled, normalizedInput, { colors: paletteEnabled ? initialPalette.length : null });
+    addTrace('contrast', contrastEnabled, adjusted, { value: contrastEnabled ? Number(config.contrast || 0) : 0 });
+
+    const edgeFactor = edgeEnabled ? config.edgeStrength / 100 : 0;
+    const transformed = new Uint8ClampedArray(adjusted);
     for (let y = 0; y < height; y += 1) for (let x = 0; x < width; x += 1) {
       const i = y * width + x; const sourceIndex = i * 4;
       if (alpha[i] < 8) continue;
@@ -347,7 +383,18 @@ function clamp(value, min, max) { return Math.min(max, Math.max(min, value)); }
         edge = clamp(Math.hypot(gx, gy) / 720, 0, 1);
       }
       const darken = edge * edgeFactor * .62;
-      mapped[i] = nearestColor(adjusted[sourceIndex] * (1 - darken), adjusted[sourceIndex + 1] * (1 - darken), adjusted[sourceIndex + 2] * (1 - darken), palette);
+      transformed[sourceIndex] = clamp(adjusted[sourceIndex] * (1 - darken), 0, 255);
+      transformed[sourceIndex + 1] = clamp(adjusted[sourceIndex + 1] * (1 - darken), 0, 255);
+      transformed[sourceIndex + 2] = clamp(adjusted[sourceIndex + 2] * (1 - darken), 0, 255);
+    }
+
+    addTrace('edges', edgeEnabled, transformed, { value: edgeEnabled ? Number(config.edgeStrength || 0) : 0 });
+    const palette = paletteEnabled ? initialPalette : buildPalette(transformed, paletteBudget);
+    const mapped = new Uint16Array(pixelCount);
+    for (let i = 0; i < pixelCount; i += 1) {
+      const sourceIndex = i * 4;
+      if (alpha[i] < 8) continue;
+      mapped[i] = nearestColor(transformed[sourceIndex], transformed[sourceIndex + 1], transformed[sourceIndex + 2], palette);
     }
 
     const output = new Uint8ClampedArray(resolution * resolution * 4);
@@ -358,6 +405,17 @@ function clamp(value, min, max) { return Math.min(max, Math.max(min, value)); }
       for (let ox = 0; ox < resolution; ox += 1) {
         counts.fill(0);
         const x0 = Math.floor(ox * scaleX); const x1 = Math.max(x0 + 1, Math.floor((ox + 1) * scaleX));
+        const outputIndex = (oy * resolution + ox) * 4;
+        if (!cellMajorityEnabled) {
+          const centerX = Math.min(width - 1, Math.max(0, Math.floor((x0 + x1) / 2)));
+          const centerY = Math.min(height - 1, Math.max(0, Math.floor((y0 + y1) / 2)));
+          const centerPixel = centerY * width + centerX;
+          if (alpha[centerPixel] < 8) { output[outputIndex + 3] = 0; continue; }
+          const color = palette[mapped[centerPixel]].rgb;
+          output[outputIndex] = color[0]; output[outputIndex + 1] = color[1]; output[outputIndex + 2] = color[2]; output[outputIndex + 3] = 255;
+          used.add(color.join(','));
+          continue;
+        }
         let alphaSum = 0; let best = 0; let bestCount = 0;
         for (let y = y0; y < y1; y += 1) for (let x = x0; x < x1; x += 1) {
           const sourcePixel = y * width + x;
@@ -369,7 +427,6 @@ function clamp(value, min, max) { return Math.min(max, Math.max(min, value)); }
           counts[colorIndex] += colorWeight;
           if (counts[colorIndex] > bestCount) { bestCount = counts[colorIndex]; best = colorIndex; }
         }
-        const outputIndex = (oy * resolution + ox) * 4;
         const cellArea = Math.max(1, (y1 - y0) * (x1 - x0));
         const coverage = alphaSum / (cellArea * 255);
         if (!alphaSum || coverage < cellCoverageThreshold) { output[outputIndex + 3] = 0; continue; }
@@ -384,6 +441,7 @@ function clamp(value, min, max) { return Math.min(max, Math.max(min, value)); }
         used.add(color.join(','));
       }
     }
+    addTrace('cell-sampling', cellMajorityEnabled, output, { coverageThreshold: cellCoverageThreshold });
     const finalPixels = config.borderEnabled
       ? addAlphaBorder(output, resolution, resolution, config.borderWidth, config.borderColor)
       : output;
@@ -393,11 +451,13 @@ function clamp(value, min, max) { return Math.min(max, Math.max(min, value)); }
         if (finalPixels[index + 3] >= 8) used.add(`${finalPixels[index]},${finalPixels[index + 1]},${finalPixels[index + 2]}`);
       }
     }
+    addTrace('final-border', config.borderEnabled === true, finalPixels, { width: resolution, height: resolution, borderWidth: config.borderWidth ?? 2 });
     return {
       pixels: finalPixels.buffer,
       usedColors: used.size,
       paletteSize: palette.length,
       borderApplied: Boolean(config.borderEnabled),
+      trace,
       elapsedMs: Date.now() - started,
     };
   }
