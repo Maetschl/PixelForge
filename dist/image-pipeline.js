@@ -44,6 +44,15 @@ function clamp(value, min, max) { return Math.min(max, Math.max(min, value)); }
     return maxX < 0 ? null : { minX, minY, maxX, maxY };
   }
 
+  function applyAlphaCutoff(input, cutoff = 51) {
+    const output = new Uint8ClampedArray(input);
+    const threshold = clamp(Number(cutoff), 0, 255);
+    for (let index = 3; index < output.length; index += 4) {
+      if (output[index] <= threshold) output[index] = 0;
+    }
+    return output;
+  }
+
   function sourceBackgroundReferences(data, width, height, bounds) {
     const coordinates = [];
     const step = Math.max(1, Math.floor(Math.min(width, height) / 24));
@@ -154,24 +163,24 @@ function clamp(value, min, max) { return Math.min(max, Math.max(min, value)); }
 
   function addAlphaBorder(input, width, height, borderWidth, color) {
     const output = new Uint8ClampedArray(input);
-    const radius = clamp(Math.ceil(Number(borderWidth) || 2), 1, 32);
+    const radius = clamp(Math.ceil(Number(borderWidth) || 2), 1, 8);
     const borderColor = parseHexColor(color);
-    const stride = width + 1;
-    const integral = new Uint32Array((height + 1) * stride);
-    for (let y = 0; y < height; y += 1) {
-      let rowSum = 0;
-      for (let x = 0; x < width; x += 1) {
-        rowSum += input[(y * width + x) * 4 + 3] >= 8 ? 1 : 0;
-        integral[(y + 1) * stride + x + 1] = integral[y * stride + x + 1] + rowSum;
-      }
-    }
     for (let y = 0; y < height; y += 1) for (let x = 0; x < width; x += 1) {
       const pixelIndex = y * width + x; const outputIndex = pixelIndex * 4;
       if (input[outputIndex + 3] >= 8) continue;
-      const left = Math.max(0, x - radius); const right = Math.min(width - 1, x + radius);
-      const top = Math.max(0, y - radius); const bottom = Math.min(height - 1, y + radius);
-      const area = integral[(bottom + 1) * stride + right + 1] - integral[top * stride + right + 1] - integral[(bottom + 1) * stride + left] + integral[top * stride + left];
-      if (area > 0) {
+      let shouldPaint = false;
+      for (let dy = -radius; dy <= radius && !shouldPaint; dy += 1) for (let dx = -radius; dx <= radius && !shouldPaint; dx += 1) {
+        if (dx === 0 && dy === 0) continue;
+        const distanceX = Math.abs(dx); const distanceY = Math.abs(dy);
+        const diagonal = distanceX > 0 && distanceY > 0;
+        const maxDistance = Math.max(distanceX, distanceY);
+        const allowedDistance = diagonal ? radius - 1 : radius;
+        if (maxDistance > allowedDistance) continue;
+        const sourceX = x + dx; const sourceY = y + dy;
+        if (sourceX < 0 || sourceX >= width || sourceY < 0 || sourceY >= height) continue;
+        if (input[(sourceY * width + sourceX) * 4 + 3] >= 8) shouldPaint = true;
+      }
+      if (shouldPaint) {
         output[outputIndex] = borderColor[0]; output[outputIndex + 1] = borderColor[1]; output[outputIndex + 2] = borderColor[2]; output[outputIndex + 3] = 255;
       }
     }
@@ -179,9 +188,9 @@ function clamp(value, min, max) { return Math.min(max, Math.max(min, value)); }
   }
 
   function applySourceEffects(input, width, height, config = {}) {
-    let output = new Uint8ClampedArray(input);
+    let output = applyAlphaCutoff(input);
     if (config.removeBackground) output = removeBackgroundFloodFill(output, width, height, clamp(Number(config.backgroundTolerance) || 0.08, 0.01, 0.5));
-    if (config.borderEnabled) output = addAlphaBorder(output, width, height, config.borderWidth, config.borderColor);
+    output = applyAlphaCutoff(output);
     return { pixels: output.buffer, width, height };
   }
 
@@ -302,19 +311,22 @@ function clamp(value, min, max) { return Math.min(max, Math.max(min, value)); }
 
   function processImageData(input, width, height, config) {
     const started = Date.now();
+    const normalizedInput = applyAlphaCutoff(input);
     const resolution = config.resolution;
     const contrastFactor = 1 + config.contrast / 100;
     const maxColors = clamp(config.maxColors || 48, 2, 48);
-    const palette = buildPalette(input, maxColors);
+    const cellCoverageThreshold = clamp(Number(config.cellCoverageThreshold ?? 0.18), 0, 1);
+    const paletteBudget = config.borderEnabled ? Math.max(1, maxColors - 1) : maxColors;
+    const palette = buildPalette(normalizedInput, paletteBudget);
     const pixelCount = width * height;
     const adjusted = new Uint8ClampedArray(pixelCount * 4);
     const luminance = new Float32Array(pixelCount);
     const alpha = new Uint8Array(pixelCount);
 
     for (let i = 0; i < pixelCount; i += 1) {
-      const sourceIndex = i * 4; const a = input[sourceIndex + 3]; alpha[i] = a;
+      const sourceIndex = i * 4; const a = normalizedInput[sourceIndex + 3]; alpha[i] = a;
       if (a < 8) continue;
-      const base = palette[nearestColor(input[sourceIndex], input[sourceIndex + 1], input[sourceIndex + 2], palette)].rgb;
+      const base = palette[nearestColor(normalizedInput[sourceIndex], normalizedInput[sourceIndex + 1], normalizedInput[sourceIndex + 2], palette)].rgb;
       const r = clamp(128 + (base[0] - 128) * contrastFactor, 0, 255);
       const g = clamp(128 + (base[1] - 128) * contrastFactor, 0, 255);
       const b = clamp(128 + (base[2] - 128) * contrastFactor, 0, 255);
@@ -346,14 +358,21 @@ function clamp(value, min, max) { return Math.min(max, Math.max(min, value)); }
       for (let ox = 0; ox < resolution; ox += 1) {
         counts.fill(0);
         const x0 = Math.floor(ox * scaleX); const x1 = Math.max(x0 + 1, Math.floor((ox + 1) * scaleX));
-        let visible = 0; let best = 0; let bestCount = 0;
+        let alphaSum = 0; let best = 0; let bestCount = 0;
         for (let y = y0; y < y1; y += 1) for (let x = x0; x < x1; x += 1) {
-          const sourcePixel = y * width + x; if (alpha[sourcePixel] < 8) continue;
-          visible += alpha[sourcePixel]; const colorIndex = mapped[sourcePixel]; counts[colorIndex] += alpha[sourcePixel];
+          const sourcePixel = y * width + x;
+          const sampleAlpha = alpha[sourcePixel];
+          if (sampleAlpha < 8) continue;
+          alphaSum += sampleAlpha;
+          const colorIndex = mapped[sourcePixel];
+          const colorWeight = sampleAlpha >= 128 ? sampleAlpha : (sampleAlpha * sampleAlpha) / 255;
+          counts[colorIndex] += colorWeight;
           if (counts[colorIndex] > bestCount) { bestCount = counts[colorIndex]; best = colorIndex; }
         }
         const outputIndex = (oy * resolution + ox) * 4;
-        if (!visible) { output[outputIndex + 3] = 0; continue; }
+        const cellArea = Math.max(1, (y1 - y0) * (x1 - x0));
+        const coverage = alphaSum / (cellArea * 255);
+        if (!alphaSum || coverage < cellCoverageThreshold) { output[outputIndex + 3] = 0; continue; }
         let runnerUp = -1; let runnerUpCount = 0;
         for (let index = 0; index < counts.length; index += 1) {
           if (index === best) continue;
@@ -365,7 +384,22 @@ function clamp(value, min, max) { return Math.min(max, Math.max(min, value)); }
         used.add(color.join(','));
       }
     }
-    return { pixels: output.buffer, usedColors: used.size, paletteSize: palette.length, elapsedMs: Date.now() - started };
+    const finalPixels = config.borderEnabled
+      ? addAlphaBorder(output, resolution, resolution, config.borderWidth, config.borderColor)
+      : output;
+    if (config.borderEnabled) {
+      used.clear();
+      for (let index = 0; index < finalPixels.length; index += 4) {
+        if (finalPixels[index + 3] >= 8) used.add(`${finalPixels[index]},${finalPixels[index + 1]},${finalPixels[index + 2]}`);
+      }
+    }
+    return {
+      pixels: finalPixels.buffer,
+      usedColors: used.size,
+      paletteSize: palette.length,
+      borderApplied: Boolean(config.borderEnabled),
+      elapsedMs: Date.now() - started,
+    };
   }
 
-export { processImageData, applySourceEffects, removeBackgroundFloodFill, addAlphaBorder };
+export { processImageData, applySourceEffects, applyAlphaCutoff, removeBackgroundFloodFill, addAlphaBorder };

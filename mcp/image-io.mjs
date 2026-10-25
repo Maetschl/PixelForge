@@ -71,13 +71,10 @@ async function composeSource(sourcePath, resolution, scale, offsetX, offsetY) {
   return { data: new Uint8ClampedArray(canvas.data), width: size, height: size, factor };
 }
 
-function effectConfig(config, factor) {
+function effectConfig(config) {
   return {
     removeBackground: config.removeBackground,
     backgroundTolerance: config.backgroundTolerance,
-    borderEnabled: config.borderEnabled,
-    borderWidth: Math.max(1, config.borderWidth * factor - 1),
-    borderColor: config.borderColor,
   };
 }
 
@@ -101,12 +98,15 @@ export async function pixelateImage(options) {
   }
   const started = Date.now();
   const composed = await composeSource(config.sourcePath, config.resolution, config.scale, config.offsetX, config.offsetY);
-  const effects = pipeline.applySourceEffects(composed.data, composed.width, composed.height, effectConfig(config, composed.factor));
+  const effects = pipeline.applySourceEffects(composed.data, composed.width, composed.height, effectConfig(config));
   const result = pipeline.processImageData(new Uint8ClampedArray(effects.pixels), composed.width, composed.height, {
     resolution: config.resolution,
     maxColors: config.maxColors,
     contrast: config.contrast,
     edgeStrength: config.edgeStrength,
+    borderEnabled: config.borderEnabled,
+    borderWidth: config.borderWidth,
+    borderColor: config.borderColor,
   });
   const pixels = new Uint8ClampedArray(result.pixels);
   let transparentPixels = 0;

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-const { processImageData, applySourceEffects } = await import('../dist/pipeline-core.mjs');
+const { processImageData, applySourceEffects, applyAlphaCutoff } = await import('../dist/pipeline-core.mjs');
 
 function pixels(width, height, fill) {
   const data = new Uint8ClampedArray(width * height * 4);
@@ -26,6 +26,26 @@ assert.equal(new Uint8ClampedArray(solid.pixels).length, 8 * 8 * 4, 'output must
 const transparent = processImageData(pixels(8, 8, (x, y) => x < 4 && y < 4 ? [20, 220, 180, 255] : [0, 0, 0, 0]), 8, 8, { resolution: 4, maxColors: 8, contrast: 0, edgeStrength: 0 });
 const transparentOutput = resultColors(transparent).output;
 assert.equal(transparentOutput[(3 * 4 + 3) * 4 + 3], 0, 'empty cells should preserve transparency');
+
+const alphaCutoffInput = pixels(3, 1, (x) => x === 0 ? [11, 22, 33, 51] : x === 1 ? [44, 55, 66, 52] : [77, 88, 99, 0]);
+const alphaCutoff = applyAlphaCutoff(alphaCutoffInput);
+assert.equal(alphaCutoff[3], 0, 'alpha at exactly 20% should become transparent');
+assert.equal(alphaCutoff[7], 52, 'alpha above 20% should remain visible');
+assert.deepEqual([...alphaCutoff.slice(4, 7)], [44, 55, 66], 'alpha cutoff must not modify RGB channels');
+const alphaCutoffSource = new Uint8ClampedArray(applySourceEffects(alphaCutoffInput, 3, 1, { removeBackground: true }).pixels);
+assert.equal(alphaCutoffSource[3], 0, 'near-transparent source pixels must stay transparent after background removal');
+const alphaCutoffPipeline = new Uint8ClampedArray(processImageData(alphaCutoffInput, 3, 1, { resolution: 3, maxColors: 2, contrast: 0, edgeStrength: 0 }).pixels);
+assert.equal(alphaCutoffPipeline[3], 0, 'direct pipeline input at 20% alpha must become transparent');
+assert.equal(alphaCutoffPipeline[7], 255, 'direct pipeline input above 20% alpha must remain visible');
+
+const sparseCell = pixels(4, 4, (x, y) => x === 1 && y === 1 ? [245, 245, 245, 112] : [0, 0, 0, 0]);
+const sparseCellOutput = new Uint8ClampedArray(processImageData(sparseCell, 4, 4, { resolution: 1, maxColors: 4, contrast: 0, edgeStrength: 0 }).pixels);
+assert.equal(sparseCellOutput[3], 0, 'a sparse antialiased residue must not become an opaque cell');
+
+const coveredCell = pixels(4, 4, (x) => x < 2 ? [42, 68, 94, 255] : [0, 0, 0, 0]);
+const coveredCellOutput = new Uint8ClampedArray(processImageData(coveredCell, 4, 4, { resolution: 1, maxColors: 4, contrast: 0, edgeStrength: 0 }).pixels);
+assert.equal(coveredCellOutput[3], 255, 'a sufficiently covered cell must remain visible');
+assert.deepEqual([...coveredCellOutput.slice(0, 3)], [42, 68, 94], 'cell majority must use the covered subject color');
 
 const gradient = processImageData(pixels(32, 32, (x, y) => [x * 8, y * 8, (x + y) * 4, 255]), 32, 32, { resolution: 16, maxColors: 4, contrast: 35, edgeStrength: 50 });
 assert.ok(resultColors(gradient).colors.size <= 4, 'output must not exceed the palette limit');
@@ -77,16 +97,27 @@ const paddedRemoved = new Uint8ClampedArray(applySourceEffects(paddedBackground,
 assert.equal(paddedRemoved[(6 * 32 + 6) * 4 + 3], 0, 'background inside transparent padding should be removed');
 assert.equal(paddedRemoved[(15 * 32 + 15) * 4 + 3], 255, 'the subject inside transparent padding must remain visible');
 
-const bordered = new Uint8ClampedArray(applySourceEffects(removedPixels, 12, 12, { borderEnabled: true, borderWidth: 1, borderColor: '#131313' }).pixels);
+const bordered = new Uint8ClampedArray(processImageData(removedPixels, 12, 12, { resolution: 12, maxColors: 48, contrast: 0, edgeStrength: 0, borderEnabled: true, borderWidth: 1, borderColor: '#131313' }).pixels);
 assert.equal(bordered[(3 * 12 + 5) * 4 + 3], 255, 'border should add alpha outside the subject');
 assert.deepEqual([...bordered.slice((3 * 12 + 5) * 4, (3 * 12 + 5) * 4 + 3)], [19, 19, 19], 'border should use the configured color');
 
+const singlePixel = pixels(9, 9, (x, y) => x === 4 && y === 4 ? [80, 120, 160, 255] : [1, 2, 3, 0]);
+const onePixelBorder = new Uint8ClampedArray(processImageData(singlePixel, 9, 9, { resolution: 9, maxColors: 48, contrast: 0, edgeStrength: 0, borderEnabled: true, borderWidth: 1, borderColor: '#abcdef' }).pixels);
+assert.equal(onePixelBorder[(4 * 9 + 3) * 4 + 3], 255, 'one-pixel border should paint the left side');
+assert.equal(onePixelBorder[(3 * 9 + 3) * 4 + 3], 0, 'one-pixel border must not paint a diagonal');
+assert.deepEqual([...onePixelBorder.slice((4 * 9 + 3) * 4, (4 * 9 + 3) * 4 + 3)], [171, 205, 239], 'border should use the configured hexadecimal color');
+
+const fourPixelBorder = new Uint8ClampedArray(processImageData(singlePixel, 9, 9, { resolution: 9, maxColors: 48, contrast: 0, edgeStrength: 0, borderEnabled: true, borderWidth: 4, borderColor: '#abcdef' }).pixels);
+assert.equal(fourPixelBorder[(4 * 9 + 0) * 4 + 3], 255, 'four-pixel border should reach four cells on a side');
+assert.equal(fourPixelBorder[(0 * 9 + 0) * 4 + 3], 0, 'four-pixel border must not reach a diagonal at distance four');
+assert.equal(fourPixelBorder[(1 * 9 + 1) * 4 + 3], 255, 'four-pixel border should reach diagonals up to distance three');
+assert.deepEqual([...fourPixelBorder.slice((4 * 9 + 4) * 4, (4 * 9 + 4) * 4 + 3)], [80, 120, 160], 'border must not overwrite visible source pixels');
+
 const supersampled = pixels(512, 512, (x, y) => x >= 160 && x < 352 && y >= 160 && y < 352 ? [40, 80, 120, 255] : [0, 0, 0, 0]);
-const supersampledBorder = new Uint8ClampedArray(applySourceEffects(supersampled, 512, 512, { borderEnabled: true, borderWidth: 3, borderColor: '#cccccc' }).pixels);
-const supersampledResult = new Uint8ClampedArray(processImageData(supersampledBorder, 512, 512, { resolution: 128, maxColors: 48, contrast: 0, edgeStrength: 0 }).pixels);
+const supersampledResult = new Uint8ClampedArray(processImageData(supersampled, 512, 512, { resolution: 128, maxColors: 48, contrast: 0, edgeStrength: 0, borderEnabled: true, borderWidth: 3, borderColor: '#cccccc' }).pixels);
 const borderCell = (x, y) => (y * 128 + x) * 4;
-assert.equal(supersampledResult[borderCell(38, 64) + 3], 0, 'a one-cell border should not spill two cells outward');
-assert.deepEqual([...supersampledResult.slice(borderCell(39, 64), borderCell(39, 64) + 3)], [204, 204, 204], 'the first outside cell should contain the border');
+assert.equal(supersampledResult[borderCell(36, 64) + 3], 0, 'a three-cell final border should not spill four cells outward');
+assert.deepEqual([...supersampledResult.slice(borderCell(37, 64), borderCell(37, 64) + 3)], [204, 204, 204], 'the first outside cell should contain the final border');
 
 const unchanged = new Uint8ClampedArray(applySourceEffects(original, 12, 12, { removeBackground: false, borderEnabled: false }).pixels);
 assert.deepEqual([...unchanged], [...original], 'disabled source effects must leave the original composition unchanged');

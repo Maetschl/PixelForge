@@ -99,6 +99,13 @@ Object.assign(locales.zh, { localStudio: '本地像素画工作室', sourceKicke
 Object.assign(locales.pt, { localStudio: 'Estúdio local de pixel art', sourceKicker: '01 / tela original', outputKicker: '02 / resultado gerado', treatmentKicker: '02 / tratamento da fonte', pipelineKicker: '03 / pipeline de processamento' });
 Object.assign(locales.ru, { localStudio: 'Локальная студия пиксель-арта', sourceKicker: '01 / исходный холст', outputKicker: '02 / созданный результат', treatmentKicker: '02 / обработка исходника', pipelineKicker: '03 / конвейер обработки' });
 
+Object.assign(locales.en, { pipelineOrder: 'Order: source treatment → palette → contrast → edges → cell majority → final border. The original image is never modified.' });
+Object.assign(locales.es, { pipelineOrder: 'Orden: tratamiento de fuente → paleta → contraste → bordes → mayoría por celda → borde final. La imagen original nunca se modifica.' });
+Object.assign(locales.ja, { pipelineOrder: '順序: 元画像処理 → パレット → コントラスト → エッジ → セルの多数色 → 最終ボーダー。元画像は変更されません。' });
+Object.assign(locales.zh, { pipelineOrder: '顺序：原图处理 → 调色板 → 对比度 → 边缘 → 单元格主色 → 最终边框。原图不会被修改。' });
+Object.assign(locales.pt, { pipelineOrder: 'Ordem: tratamento da fonte → paleta → contraste → bordas → maioria por célula → borda final. A imagem original nunca é alterada.' });
+Object.assign(locales.ru, { pipelineOrder: 'Порядок: обработка исходника → палитра → контраст → границы → большинство в ячейке → финальная рамка. Исходное изображение не изменяется.' });
+
 const modeLabels = {
   en: { editorMode: 'Editor mode', mode2d: '2D', mode3d: '3D', modelCanvas: '3D model canvas', dropModelHere: 'Drop a 3D model here', modelFormats: 'GLB, GLTF, OBJ, FBX or MTL files', chooseModel: 'Choose model', importModel: 'Import model', noModelLoaded: 'No model loaded', orbitZoomHint: 'Drag to orbit · wheel to zoom', resetView: 'Reset view', modelSource: '3D model', modelKicker: '01 / model canvas', modelReady: 'Model ready to forge', loadingModel: 'Loading model…', modelLoadError: 'That model could not be loaded.', webglError: 'WebGL is unavailable. 2D mode is still available.', modelResultAppearsHere: 'Your 3D result will appear here', importModelToStart: 'Import a local model to start the forge.' },
   es: { editorMode: 'Modo del editor', mode2d: '2D', mode3d: '3D', modelCanvas: 'Lienzo del modelo 3D', dropModelHere: 'Arrastra un modelo 3D aquí', modelFormats: 'Archivos GLB, GLTF, OBJ, FBX o MTL', chooseModel: 'Elegir modelo', importModel: 'Importar modelo', noModelLoaded: 'Sin modelo cargado', orbitZoomHint: 'Arrastra para orbitar · rueda para zoom', resetView: 'Restablecer vista', modelSource: 'Modelo 3D', modelKicker: '01 / lienzo del modelo', modelReady: 'Modelo listo para forjar', loadingModel: 'Cargando modelo…', modelLoadError: 'No se pudo cargar ese modelo.', webglError: 'WebGL no está disponible. El modo 2D sigue disponible.', modelResultAppearsHere: 'Tu resultado 3D aparecerá aquí', importModelToStart: 'Importa un modelo local para comenzar el forge.' },
@@ -243,7 +250,7 @@ let sourceEffectTimer = null;
 let modelLoadToken = 0;
 
 try {
-  worker = new Worker('./pipeline-worker.js', { type: 'module' });
+  worker = new Worker('./pipeline-worker.js?v=final-border-20261025-2', { type: 'module' });
   workerReady = true;
   worker.addEventListener('message', handleWorkerMessage);
   worker.addEventListener('error', () => {
@@ -694,17 +701,10 @@ function getImageRect() {
   return { x: state.transform.x - width / 2, y: state.transform.y - height / 2, width, height };
 }
 
-function effectConfig(scale) {
-  // Border width is expressed in logical output pixels. The source/effect
-  // buffer is supersampled, so compensate for the inclusive dilation window
-  // to keep 1 px equal to exactly one pixel-art cell after reduction.
-  const supersample = Math.max(1, Math.round(scale));
+function effectConfig() {
   return {
     removeBackground: state.sourceEffects.removeBackground,
     backgroundTolerance: state.sourceEffects.backgroundTolerance,
-    borderEnabled: state.sourceEffects.borderEnabled,
-    borderWidth: Math.max(1, state.sourceEffects.borderWidth * supersample - 1),
-    borderColor: state.sourceEffects.borderColor,
   };
 }
 
@@ -721,8 +721,8 @@ function renderTransformedPixels(size) {
     composite.drawImage(state.image, rect.x * size / state.resolution, rect.y * size / state.resolution, rect.width * size / state.resolution, rect.height * size / state.resolution);
   }
   const pixels = composite.getImageData(0, 0, size, size);
-  if (!state.sourceEffects.removeBackground && !state.sourceEffects.borderEnabled) return pixels;
-  const result = pipeline.applySourceEffects(pixels.data, size, size, effectConfig(size / state.resolution));
+  if (!state.sourceEffects.removeBackground) return pixels;
+  const result = pipeline.applySourceEffects(pixels.data, size, size, effectConfig());
   return new ImageData(new Uint8ClampedArray(result.pixels), size, size);
 }
 
@@ -773,6 +773,14 @@ function drawResult(imageData) {
     els.resultEmpty.hidden = false;
   }
   drawProofPreviews(imageData);
+}
+
+function countOutputColors(pixels) {
+  const colors = new Set();
+  for (let index = 0; index < pixels.length; index += 4) {
+    if (pixels[index + 3] >= 8) colors.add(`${pixels[index]},${pixels[index + 1]},${pixels[index + 2]}`);
+  }
+  return colors.size;
 }
 
 function drawProofCanvas(canvas, imageData, background) {
@@ -902,7 +910,8 @@ function captureThreePixels(size) {
     const sourceRow = (size - 1 - y) * size * 4;
     flipped.set(pixels.subarray(sourceRow, sourceRow + size * 4), y * size * 4);
   }
-  const effects = pipeline.applySourceEffects(flipped, size, size, effectConfig(size / state.resolution));
+  if (!state.sourceEffects.removeBackground) return { pixels: new ImageData(flipped, size, size), width: size, height: size };
+  const effects = pipeline.applySourceEffects(flipped, size, size, effectConfig());
   return { pixels: new ImageData(new Uint8ClampedArray(effects.pixels), size, size), width: size, height: size };
 }
 
@@ -920,7 +929,15 @@ function generate() {
   els.resultStatus.textContent = t('forgeProgress');
   els.generateButton.disabled = true;
   const composite = renderComposite();
-  const config = { resolution: state.resolution, maxColors: state.pipeline.palette, contrast: state.pipeline.contrast, edgeStrength: state.pipeline.edges };
+  const config = {
+    resolution: state.resolution,
+    maxColors: state.pipeline.palette,
+    contrast: state.pipeline.contrast,
+    edgeStrength: state.pipeline.edges,
+    borderEnabled: state.sourceEffects.borderEnabled,
+    borderWidth: state.sourceEffects.borderWidth,
+    borderColor: state.sourceEffects.borderColor,
+  };
   if (workerReady && worker) {
     const buffer = composite.pixels.data.buffer;
     worker.postMessage({ requestId, width: composite.width, height: composite.height, pixels: buffer, config }, [buffer]);
@@ -940,10 +957,15 @@ function handleWorkerMessage(event) {
 
 function handlePipelineResult(requestId, result) {
   if (requestId !== state.requestId) return;
-  const pixels = result.pixels instanceof ArrayBuffer ? new Uint8ClampedArray(result.pixels) : result.pixels;
+  let pixels = result.pixels instanceof ArrayBuffer ? new Uint8ClampedArray(result.pixels) : result.pixels;
+  let usedColors = result.usedColors;
+  if (state.sourceEffects.borderEnabled && !result.borderApplied) {
+    pixels = pipeline.addAlphaBorder(pixels, state.resolution, state.resolution, state.sourceEffects.borderWidth, state.sourceEffects.borderColor);
+    usedColors = countOutputColors(pixels);
+  }
   state.output = new ImageData(pixels, state.resolution, state.resolution);
   state.busy = false;
-  state.usedColors = result.usedColors;
+  state.usedColors = usedColors;
   state.lastElapsedMs = result.elapsedMs;
   saveActiveOutput();
   updatePipelineUI();
